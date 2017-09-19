@@ -1,4 +1,4 @@
-# -*- coding: cp950 -*-
+# -*- coding: utf-8 -*-
 # comment
 import telnetlib
 import uao_decode
@@ -12,7 +12,7 @@ content = tn.read_very_eager().decode('uao_decode');
 
 # print(content);
 
-if "½Ð¿é¤J¥N¸¹" in content:
+if u"è«‹è¼¸å…¥ä»£è™Ÿ" in content:
     tn.write("guest^m");
     time.sleep(3);
     content = tn.read_very_eager().decode('uao_decode');
