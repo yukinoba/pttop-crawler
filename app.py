@@ -1,12 +1,12 @@
 # -*- coding: cp950 -*-
 # comment
 import telnetlib
-import codecs
+import uao_decode.py
 import sys
 import time
 
 tn = telnetlib.Telnet('ptt.cc');
 time.sleep(3);
-content = tn.read_very_eager().decode('cp950','ignore');
+content = tn.read_very_eager().decode('uao_decode');
 
 print(content);
