@@ -1,7 +1,12 @@
-# -*- encoding: cp950 -*-
+# -*- coding: cp950 -*-
 # comment
+import telnetlib
 import codecs
 import sys
+import time
 
-text = "Hello, World!";
-print(text);
+tn = telnetlib.Telnet('ptt.cc');
+time.sleep(3);
+content = tn.read_very_eager().decode('cp950','ignore');
+
+print(content);
