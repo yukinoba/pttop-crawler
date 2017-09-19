@@ -1,9 +1,9 @@
 # -*- coding: cp950 -*-
 # comment
 import telnetlib
-import uao_decode.py
 import sys
 import time
+from . import uao_decode
 
 tn = telnetlib.Telnet('ptt.cc');
 time.sleep(3);
