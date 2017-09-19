@@ -4,6 +4,7 @@ import telnetlib
 import uao_decode
 import sys
 import datetime
+import time
 
 tn = telnetlib.Telnet('ptt.cc');
 time.sleep(3);
