@@ -19857,7 +19857,7 @@ encoding_map.update({
     0x8262: 0xFEFC,
     0x826A: 0xFEFD,
     0x8288: 0xFEFE,
-}
+})
 
 ### Decoding Map
 
