@@ -12,8 +12,8 @@ content = tn.read_very_eager().decode('uao_decode');
 
 # print(content);
 
-if u"請輸入代號" in content:
-    tn.write("guest^m");
+if "請輸入代號" in content:
+    tn.write("guest\r\n");
     time.sleep(3);
     content = tn.read_very_eager().decode('uao_decode');
     
