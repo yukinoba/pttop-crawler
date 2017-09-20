@@ -5,6 +5,7 @@ import uao_decode
 import sys
 import datetime
 import time
+import re
 
 tn = telnetlib.Telnet('ptt.cc');
 time.sleep(3);
@@ -59,6 +60,15 @@ if "主功能表" in content:
             content = tn.read_very_eager().decode('uao_decode');
 
 # Check violation and prosecute
+
+print(content);
+
+pattern = re.compile("★[ ]+\~.*frojet       □ \[公告\] 板規《海賊教戰守則》");
+match = pattern.search(content);
+if match:
+    print(">>> 有沒看過的檢舉資訊");
+else:
+    print(">>> 沒有新的檢舉資訊了");
 
 # Logout process
 
