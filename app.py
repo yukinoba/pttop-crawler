@@ -63,7 +63,8 @@ if "主功能表" in content:
 
 print(content);
 
-pattern = re.compile("★[ ]+\~.*frojet       □ \[公告\] 板規《海賊教戰守則》");
+# pattern = re.compile("★[ ]+\~.*frojet       □ \[公告\] 板規《海賊教戰守則》");
+pattern = re.compile(b"\\x1b\[1;33m" + "★");
 match = pattern.search(content);
 if match:
     print(">>> 有沒看過的檢舉資訊");
