@@ -13,8 +13,13 @@ content = tn.read_very_eager().decode('uao_decode');
 # print(content);
 
 if "請輸入代號" in content:
-    tn.write("guest".encode('cp950') + b"\r\n");
+    tn.write("SeptemberCat".encode('cp950') + b"^m");
     time.sleep(3);
     content = tn.read_very_eager().decode('uao_decode');
     
-    print(content);
+    if "請輸入您的密碼" in content:
+        tn.write("meow".encode('cp950') + b"^m");
+        time.sleep(3);
+        content = tn.read_very_eager().decode('uao_decode');
+
+print(content);
