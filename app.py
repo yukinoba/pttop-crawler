@@ -17,7 +17,8 @@ import http.client
 from bs4 import BeautifulSoup
 
 conn = http.client.HTTPSConnection("www.ptt.cc");
-response = conn.request("GET", "/bbs/ONE_PIECE/index.html").getresponse();
+conn.request("GET", "/bbs/ONE_PIECE/index.html");
+response = conn.getresponse();
 content = response.read().decode(response.headers.get_content_charset('utf-8'));
 
 soup = BeautifulSoup(content);
