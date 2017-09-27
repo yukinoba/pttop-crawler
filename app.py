@@ -46,6 +46,7 @@ while True:
             soup_prosec = BeautifulSoup(content_prosec, 'html.parser');
             for lastedit in soup_prosec.select('span.f2'):
                 if "編輯" in lastedit.text:
+                    newpush = None;
                     for newpush in lastedit.find_next_siblings('div', 'push'):
                         if newpush.text in last_newpush_list:
                             print(">>> 尚未處理：" + newpush.text);
