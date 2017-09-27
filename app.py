@@ -13,14 +13,15 @@
         # for title in res.select('div.title'):
             # print(title.select('a')[0].text);
 
-import http.client
+import urllib.request
+from bs4 import BeautifulSoup
 
-conn = http.client.HTTPSConnection("www.ptt.cc");
-conn.request("GET", "/bbs/ONE_PIECE/index.html");
-response = conn.getresponse();
-content = response.read().decode('utf-8');
+response = urllib.request.urlopen('https://www.ptt.cc/bbs/ONE_PIECE/index.html');
+content = response.read().decode(response.headers.get_content_charset('utf-8'));
+soup = BeautifulSoup(content);
 
-print(content);
+for title in soup.select('div.title'):
+    print(title.select('a')[0].text);
 
 # import telnetlib
 # import uao_decode
