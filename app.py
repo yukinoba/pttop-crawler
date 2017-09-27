@@ -76,10 +76,11 @@ if "主功能表" in content:
 
 # print(content);
 
+bbs_width = 160;
 content_len = len(content);
-for index in range(0, content_len, 80):
-    cap = index + 80 - 1;
-    if index + 80 > content_len:
+for index in range(0, content_len, bbs_width):
+    cap = index + bbs_width - 1;
+    if index + bbs_width > content_len:
         cap = content_len - 1;
     print(">>> 讀取列表");
     print(content[index:cap]);
