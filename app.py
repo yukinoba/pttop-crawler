@@ -13,9 +13,9 @@
         # for title in res.select('div.title'):
             # print(title.select('a')[0].text);
 
-import httplib
+import http.client
 
-conn = httplib.HTTPSConnection("www.ptt.cc");
+conn = http.client.HTTPSConnection("www.ptt.cc");
 conn.request("GET", "/bbs/ONE_PIECE/index.html");
 response = conn.getresponse();
 content = response.read();
