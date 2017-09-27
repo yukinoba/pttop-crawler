@@ -92,8 +92,14 @@ if "主功能表" in content:
 # pattern = re.compile("★[ ]+\~.*frojet       □ \[公告\] 板規《海賊教戰守則》");
 # pattern = re.compile("★");
 pattern = re.compile("[\x1b]");
-matches = pattern.findall(content);
-print(">>> 控制碼數量：" + str(len(matches)));
+matches = pattern.finditer(content);
+count = 0;
+for mo in matches:
+    index = mo.start() + 1;
+    cap = index + 10;
+    print(content[start:cap]);
+    count = count + 1;
+print(">>> 控制碼數量：" + str(count));
 # match = pattern.search(content);
 # if match:
     # print(">>> 有沒看過的檢舉資訊");
