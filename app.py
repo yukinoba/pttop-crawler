@@ -97,6 +97,8 @@ count = 0;
 for mo in matches:
     index = mo.start() + 1;
     cap = index + 10;
+    if cap > len(content):
+        cap = len(content) - 1;
     print(content[start:cap]);
     count = count + 1;
 print(">>> 控制碼數量：" + str(count));
