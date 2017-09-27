@@ -100,7 +100,7 @@ for mo in matches:
     if cap > len(content):
         cap = len(content) - 1;
     print(">>> 發現控制碼");
-    print(content[start:cap]);
+    print(content[index:cap]);
     count = count + 1;
 print(">>> 控制碼數量：" + str(count));
 # match = pattern.search(content);
