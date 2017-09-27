@@ -28,9 +28,9 @@ while True:
 
     soup_list = BeautifulSoup(content_list, 'html.parser');
     for title in soup_list.select('div.title'):
-        print(">>> 讀取標題：" + title.select('a')[0].text);
+        # print(">>> 讀取標題：" + title.select('a')[0].text);
         if "檢舉區" in title.select('a')[0].text:
-            print(">>> 檢舉區連結：" + title.select('a')[0]['href']);
+            # print(">>> 檢舉區連結：" + title.select('a')[0]['href']);
             prosec_href = title.select('a')[0]['href'];
             
             conn.request("GET", prosec_href);
@@ -55,7 +55,9 @@ while True:
                                 del last_newpush_list[:];
                                 newcoming = True;
                             last_newpush_list.append(newpush.text);
-                        
+                    if newpush is None:
+                        print(">>> 無新推文");
+                        del last_newpush_list[:];
     time.sleep(60 * 1);
 
 # import telnetlib
