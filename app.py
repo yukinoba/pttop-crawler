@@ -20,7 +20,7 @@ conn.request("GET", "/bbs/ONE_PIECE/index.html");
 response = conn.getresponse();
 content = response.read();
 
-print(content);
+print(str(content));
 
 # import telnetlib
 # import uao_decode
