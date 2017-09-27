@@ -93,7 +93,7 @@ if "主功能表" in content:
 # pattern = re.compile("★");
 pattern = re.compile("[\x1b]");
 matches = pattern.findall(content);
-print(">>> 控制碼數量：" + len(matches));
+print(">>> 控制碼數量：" + str(len(matches)));
 # match = pattern.search(content);
 # if match:
     # print(">>> 有沒看過的檢舉資訊");
