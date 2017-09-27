@@ -34,7 +34,13 @@ for title in soup_list.select('div.title'):
         
         soup_prosec = BeautifulSoup(content_prosec, 'html.parser');
         for push in soup_prosec.select('div.push'):
-            print(">>> 讀取推文：" + push.select('span.push-content')[0].text);
+            print(">>> 讀取推文：" + push.text);
+        for lastpush in soup_prosec.select('div.push:last-of-type'):
+            print(">>> 最後一則推文為：" + lastpush.text);
+        for lastedit in soup_prosec.select('span.f2'):
+            if "編輯" in lastedit.text:
+                for newpush in lastedit.find_next_siblings('div', 'push'):
+                    print(">>> 有新推文：" + newpush.text);
 
 # import telnetlib
 # import uao_decode
