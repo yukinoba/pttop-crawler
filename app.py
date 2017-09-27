@@ -18,12 +18,23 @@ from bs4 import BeautifulSoup
 
 conn = http.client.HTTPSConnection("www.ptt.cc");
 conn.request("GET", "/bbs/ONE_PIECE/index.html");
-response = conn.getresponse();
-content = response.read().decode(response.headers.get_content_charset('utf-8'));
+response_list = conn.getresponse();
+content_list = response_list.read().decode(response_list.headers.get_content_charset('utf-8'));
 
-soup = BeautifulSoup(content);
-for title in soup.select('div.title'):
-    print(title.select('a')[0].text);
+soup_list = BeautifulSoup(content_list, 'html.parser');
+for title in soup_list.select('div.title'):
+    print(">>> 讀取標題：" + title.select('a')[0].text);
+    if "檢舉區" in title.select('a')[0].text:
+        print(">>> 檢舉區連結：" + title.select('a')[0]['href']);
+        prosec_href = title.select('a')[0]['href'];
+        
+        conn.request("GET", prosec_href);
+        response_prosec = conn.getresponse();
+        content_prosec = response_prosec.read().decode(response_prosec.headers.get_content_charset('utf-8'));
+        
+        soup_prosec = BeautifulSoup(content_prosec, 'html.parser');
+        for push in soup_prosec.select('div.push'):
+            print(">>> 讀取推文：" + push.select('span.push-content')[0].text);
 
 # import telnetlib
 # import uao_decode
