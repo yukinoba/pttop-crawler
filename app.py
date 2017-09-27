@@ -1,20 +1,11 @@
 # -*- coding: utf-8 -*-
 # comment
-# import scrapy
-# from bs4 import BeautifulSoup
-
-# class PTTOPCrawler(scrapy.Spider):
-    # name = 'pttop';
-    # allowed_domains = ['ptt.cc'];
-    # start_urls = ('https://www.ptt.cc/bbs/ONE_PIECE/index.html', );
-    
-    # def parse(self, response):
-        # res = BeautifulSoup(response.body);
-        # for title in res.select('div.title'):
-            # print(title.select('a')[0].text);
-
+import telnetlib
+import uao_decode
 import sys
+import datetime
 import time
+import re
 import http.client
 from bs4 import BeautifulSoup
 
@@ -37,146 +28,134 @@ while True:
             response_prosec = conn.getresponse();
             content_prosec = response_prosec.read().decode(response_prosec.headers.get_content_charset('utf-8'));
             
-            soup_prosec = BeautifulSoup(content_prosec, 'html.parser');
-            for lastpush in soup_prosec.select('div.push'):
-                pass
-            print(">>> 最後推文：" + lastpush.text);
-            
             newcoming = False;
             soup_prosec = BeautifulSoup(content_prosec, 'html.parser');
             for lastedit in soup_prosec.select('span.f2'):
                 if "編輯" in lastedit.text:
-                    newpush = None;
                     for newpush in lastedit.find_next_siblings('div', 'push'):
-                        if newpush.text in last_newpush_list:
-                            print(">>> 尚未處理：" + newpush.text);
+                        tag = newpush.select('span.push-tag')[0].text.rstrip();
+                        userid = newpush.select('span.push-userid')[0].text.rstrip();
+                        content = newpush.select('span.push-content')[0].text.rstrip();
+                        ipdatetime = newpush.select('span.push-ipdatetime')[0].text.rstrip();
+                        
+                        pushtext = '{} {}{}    {}'.format(tag, userid, content, ipdatetime);
+                        
+                        if pushtext in last_newpush_list:
+                            print(">>> 尚未處理：" + pushtext);
                         else:
-                            print(">>> 有新推文：" + newpush.text);
                             if not newcoming:
                                 del last_newpush_list[:];
                                 newcoming = True;
-                            last_newpush_list.append(newpush.text);
-                    if newpush is None:
+                            last_newpush_list.append(pushtext);
+                    if not newcoming:
                         print(">>> 無新推文");
                         del last_newpush_list[:];
+                    else:
+                        #for newpushtext in last_newpush_list:
+                           # print(">> 有新推文：" + newpushtext);
+                        tn = telnetlib.Telnet('ptt.cc');
+                        time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
+                        # Login process
+                        if "請輸入代號" in content_term:
+                            print(">>> 輸入帳號");
+                            tn.write("yukinoba".encode('cp950') + b"\r");
+                            time.sleep(3);
+                            content_term = tn.read_very_eager().decode('uao_decode');
+                            
+                            if "請輸入您的密碼" in content_term:
+                                print(">>> 輸入密碼");
+                                tn.write("ckmagic007".encode('cp950') + b"\r");
+                                time.sleep(3);
+                                content_term = tn.read_very_eager().decode('uao_decode');
+                                
+                                if "您想刪除其他重複登入的連線嗎" in content_term:
+                                    print(">>> 刪除重複登入");
+                                    tn.write("n".encode('cp950') + b"\r");
+                                    time.sleep(5);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                
+                                if "請按任意鍵繼續" in content_term:
+                                    print(">>> 登入成功");
+                                    tn.write(" ".encode('cp950'));
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                        # Enter mailbox and send notifications
+                        if "主功能表" in content_term:
+                            print(">>> 主功能表");
+                            tn.write("m".encode('cp950'));
+                            time.sleep(3);
+                            tn.write(b"\x1b[C");
+                            time.sleep(3);
+                            content_term = tn.read_very_eager().decode('uao_decode');
+                            
+                            if "電子郵件" in content_term:
+                                print(">>> 進入寄信");
+                                tn.write("m".encode('cp950'));
+                                time.sleep(3);
+                                tn.write(b"\x1b[C");
+                                time.sleep(3);
+                                content_term = tn.read_very_eager().decode('uao_decode');
+                                
+                                if "群組寄信名單" in content_term:
+                                    print(">>> 寄信名單");
+                                    tn.write("0".encode('cp950') + b"\r");
+                                    time.sleep(3);
+                                    tn.write("m".encode('cp950') + b"\r");
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                    
+                                    if "主題" in content_term:
+                                        print(">>> 信件主旨");
+                                        tn.write("有新檢舉推文通知".encode('cp950') + b"\r");
+                                        time.sleep(3);
+                                        content_term = tn.read_very_eager().decode('uao_decode');
+                                        
+                                        if "通告" in content_term:
+                                            print(">>> 檢舉通知");
+                                            tn.write(b"\x1b[6~");
+                                            time.sleep(3);
+                                            for newpushtext in last_newpush_list:
+                                                tn.write(newpushtext.encode('cp950') + b"\r");
+                                                time.sleep(3);
+                                            tn.write(b"\x18");
+                                            time.sleep(3);
+                                            content_term = tn.read_very_eager().decode('uao_decode');
+                                            
+                                            if "檔案處理" in content_term:
+                                                print(">>> 寄出信件");
+                                                tn.write("s".encode('cp950') + b"\r");
+                                                time.sleep(3);
+                                                content_term = tn.read_very_eager().decode('uao_decode');
+                                                
+                                                if "簽名檔" in content_term:
+                                                    print(">>> 不加簽名");
+                                                    tn.write("0".encode('cp950') + b"\r");
+                                                    time.sleep(3);
+                                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                                    
+                                                    if "自存底稿" in content_term:
+                                                        print(">>> 不存底稿");
+                                                        tn.write("n".encode('cp950') + b"\r");
+                                                        time.sleep(3);
+                                                        content_term = tn.read_very_eager().decode('uao_decode');
+                        # Logout process
+                        while not "主功能表" in content_term:
+                            print(">>> 回上一層");
+                            tn.write(b"\x1b[D");
+                            time.sleep(3);
+                            content_term = tn.read_very_eager().decode('uao_decode');
+                        if "主功能表" in content_term:
+                            print(">>> 登出");
+                            tn.write(b"\x1b[D");
+                            time.sleep(3);
+                            tn.write(b"\x1b[C");
+                            time.sleep(3);
+                            content_term = tn.read_very_eager().decode('uao_decode');
+                            
+                            if "您確定要離開" in content_term:
+                                print(">>> 確認登出");
+                                tn.write("Y".encode('cp950') + b"\r");
+                                time.sleep(3);
+                                content_term = tn.read_very_eager().decode('uao_decode');
     time.sleep(60 * 1);
-
-# import telnetlib
-# import uao_decode
-# import sys
-# import datetime
-# import time
-# import re
-
-# tn = telnetlib.Telnet('ptt.cc');
-# time.sleep(3);
-# content = tn.read_very_eager().decode('uao_decode');
-
-# # print(content);
-
-# # Login process
-
-# if "請輸入代號" in content:
-    # print(">>> 輸入帳號");
-    # tn.write("SeptemberCat".encode('cp950') + b"\r");
-    # time.sleep(3);
-    # content = tn.read_very_eager().decode('uao_decode');
-    
-    # if "請輸入您的密碼" in content:
-        # print(">>> 輸入密碼");
-        # tn.write("meow".encode('cp950') + b"\r");
-        # time.sleep(3);
-        # content = tn.read_very_eager().decode('uao_decode');
-        
-        # if "您想刪除其他重複登入的連線嗎" in content:
-            # print(">>> 刪除重複登入");
-            # tn.write("Y".encode('cp950') + b"\r");
-            # time.sleep(3);
-            # content = tn.read_very_eager().decode('uao_decode');
-        
-        # if "請按任意鍵繼續" in content:
-            # print(">>> 登入成功");
-            # tn.write(" ".encode('cp950'));
-            # time.sleep(3);
-            # content = tn.read_very_eager().decode('uao_decode');
-
-# # Enter specific board and get article list
-
-# if "主功能表" in content:
-    # print(">>> 主功能表");
-    # tn.write("s".encode('cp950'));
-    # time.sleep(3);
-    # content = tn.read_very_eager().decode('uao_decode');
-    
-    # if "選擇看板" in content:
-        # print(">>> 選擇看板");
-        # tn.write("one_piece".encode('cp950') + b"\r");
-        # time.sleep(3);
-        # content = tn.read_very_eager().decode('uao_decode');
-        
-        # if "動畫播放中" in content:
-            # print(">>> 進板畫面");
-            # tn.write(" ".encode('cp950'));
-            # time.sleep(3);
-            # content = tn.read_very_eager().decode('uao_decode');
-
-# # Check violation and prosecute
-
-# # print(content);
-
-# # bbs_width = 160;
-# # content_len = len(content);
-# # for index in range(0, content_len, bbs_width):
-    # # cap = index + bbs_width - 1;
-    # # if index + bbs_width > content_len:
-        # # cap = content_len - 1;
-    # # print(">>> 讀取列表");
-    # # print(content[index:cap]);
-
-# # for line in content.splitlines():
-    # # print(">>> 讀取列表");
-    # # print(line);
-
-# # pattern = re.compile("★[ ]+\~.*frojet       □ \[公告\] 板規《海賊教戰守則》");
-# # pattern = re.compile("★");
-# pattern = re.compile("[\x1b]");
-# matches = pattern.finditer(content);
-# count = 0;
-# for mo in matches:
-    # index = mo.start() + 1;
-    # cap = index + 10;
-    # if cap > len(content):
-        # cap = len(content) - 1;
-    # print(">>> 發現控制碼");
-    # print(content[index:cap]);
-    # count = count + 1;
-# print(">>> 控制碼數量：" + str(count));
-# # match = pattern.search(content);
-# # if match:
-    # # print(">>> 有沒看過的檢舉資訊");
-# # else:
-    # # print(">>> 沒有新的檢舉資訊了");
-
-# # Logout process
-
-# while not "主功能表" in content:
-    # print(">>> 回上一層");
-    # tn.write(b"\x1b[D");
-    # time.sleep(3);
-    # content = tn.read_very_eager().decode('uao_decode');
-
-# if "主功能表" in content:
-    # print(">>> 登出");
-    # tn.write(b"\x1b[D");
-    # time.sleep(3);
-    # tn.write(b"\x1b[C");
-    # time.sleep(3);
-    # content = tn.read_very_eager().decode('uao_decode');
-    
-    # if "您確定要離開" in content:
-        # print(">>> 確認登出");
-        # tn.write("Y".encode('cp950') + b"\r");
-        # time.sleep(3);
-        # content = tn.read_very_eager().decode('uao_decode');
-
-# print(content);
