@@ -13,13 +13,14 @@
         # for title in res.select('div.title'):
             # print(title.select('a')[0].text);
 
-import urllib.request
+import http.client
 from bs4 import BeautifulSoup
 
-response = urllib.request.urlopen('https://www.ptt.cc/bbs/ONE_PIECE/index.html');
+conn = http.client.HTTPSConnection("www.ptt.cc");
+response = conn.request("GET", "/bbs/ONE_PIECE/index.html").getresponse();
 content = response.read().decode(response.headers.get_content_charset('utf-8'));
-soup = BeautifulSoup(content);
 
+soup = BeautifulSoup(content);
 for title in soup.select('div.title'):
     print(title.select('a')[0].text);
 
