@@ -18,9 +18,9 @@ import http.client
 conn = http.client.HTTPSConnection("www.ptt.cc");
 conn.request("GET", "/bbs/ONE_PIECE/index.html");
 response = conn.getresponse();
-content = response.read();
+content = response.read().decode('utf-8');
 
-print(str(content));
+print(content);
 
 # import telnetlib
 # import uao_decode
