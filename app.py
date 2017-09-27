@@ -76,14 +76,14 @@ if "主功能表" in content:
 
 # print(content);
 
-bbs_width = 160;
-content_len = len(content);
-for index in range(0, content_len, bbs_width):
-    cap = index + bbs_width - 1;
-    if index + bbs_width > content_len:
-        cap = content_len - 1;
-    print(">>> 讀取列表");
-    print(content[index:cap]);
+# bbs_width = 160;
+# content_len = len(content);
+# for index in range(0, content_len, bbs_width):
+    # cap = index + bbs_width - 1;
+    # if index + bbs_width > content_len:
+        # cap = content_len - 1;
+    # print(">>> 讀取列表");
+    # print(content[index:cap]);
 
 # for line in content.splitlines():
     # print(">>> 讀取列表");
@@ -91,6 +91,9 @@ for index in range(0, content_len, bbs_width):
 
 # pattern = re.compile("★[ ]+\~.*frojet       □ \[公告\] 板規《海賊教戰守則》");
 # pattern = re.compile("★");
+pattern = re.compile("[\x1b]");
+matches = pattern.findall(content);
+print(">>> 控制碼數量：" + len(matches));
 # match = pattern.search(content);
 # if match:
     # print(">>> 有沒看過的檢舉資訊");
