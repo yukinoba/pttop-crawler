@@ -288,6 +288,9 @@ def post_warning( postlist ):
 # Main procedure
 last_newpush_list = [];
 warning_post_list = [];
+last_chapter_int = 880; #--106.09.28 magic number
+default_board_topic = "[海賊] 人類的夢想，永無止境！";
+board_topic_keeper = None;
 conn = http.client.HTTPSConnection("www.ptt.cc");
 # Work until shutdown
 while True:
@@ -390,5 +393,34 @@ while True:
         post_warning(warning_post_list);
     else:
         print(">>> 不需警告");
+    # Check intelligence posts
+    # Only check on Wednesday to Saturday, Monday = 0, Tuesday = 1, Sunday = 6
+    weekday_int = datetime.date.today().weekday();
+    if weekday_int > 1 and weekday_int < 6:
+        newchapter = False;
+        soup_list = BeautifulSoup(content_list, 'html.parser');
+        for title in soup_list.select('div.title'):
+            # print(">>> 讀取標題：" + title.text);
+            if title.text.lstrip().startswith("[情報]"):
+                # Find next chapter number in post title
+                pattern = re.compile('[0-9]+');
+                number_list = re.findall(pattern, title.text);
+                for numbers in number_list:
+                    chapter_int = int(numbers, 10);
+                    if chapter_int > last_chapter_int and (chapter_int - last_chapter_int) == 1:
+                        last_chapter_int = chapter_int;
+                        newchapter = True;
+        # Save current board topic, and replace topic by warning message
+        if newchapter:
+            print(">>> 有新情報：" + str(last_chapter_int));
+            # TODO
+        else:
+            print(">>> 沒有情報");
+    else:
+        # Change board topic back after Saturday
+        if not board_topic_keeper is None:
+            print(">>> 更換板標：" + board_topic_keeper);
+            # TODO
+            board_topic_keeper = None;
     # Rest a moment
     time.sleep(60 * 1);
