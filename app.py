@@ -16,9 +16,9 @@ chapter_starts = 880; #--2017.09.28 magic number
 # Function definition
 # Utility: convert PTT web filename to AIDu
 def fn2aidu( type, v1, v2 ):
-    print(">>> type=" + str(type));
-    print(">>> v1=" + str(v1));
-    print(">>> v2=" + str(v2));
+    # print(">>> type=" + str(type));
+    # print(">>> v1=" + str(v1));
+    # print(">>> v2=" + str(v2));
     aidu = None;
     type_int = 0;
     if type == "G":
@@ -33,7 +33,7 @@ def fn2aidu( type, v1, v2 ):
     return aidu;
 # Utility: convert PTT AIDu to AIDc
 def aidu2aidc( aidu ):
-    print(">>> aidu=" + str(aidu));
+    # print(">>> aidu=" + str(aidu));
     aidc = None;
     aidc_cell = ['X','X','X','X','X','X','X','X'];
     aidc_map = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','-','_'];
@@ -236,13 +236,15 @@ def post_warning( postlist ):
                             content_term = tn.read_very_eager().decode('uao_decode');
                             # Post not exists
                             if "請按任意鍵繼續" in content_term:
+                                print(">>> 沒有文章");
                                 tn.write(" ".encode('cp950'));
                                 time.sleep(3);
                                 content_term = tn.read_very_eager().decode('uao_decode');
                                 # Back to post list
                                 continue;
                             # Push warning message under the post
-                            if "文章選讀" in content_term:
+                            #--2017.09.29 After post jump, there is no "文章選讀" keywords
+                            if "看板資訊" in content_term:
                                 for warnmsg in warning_message:
                                     print(">>> 進行推文");
                                     tn.write("X".encode('cp950'));
@@ -251,18 +253,21 @@ def post_warning( postlist ):
                                     # Possible push procedures
                                     # Push is prohibited
                                     if "禁止推薦" in content_term:
+                                        print(">>> 禁止推文");
                                         tn.write(" ".encode('cp950'));
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
                                         break;
                                     # Login account as same as author
                                     if "作者本人" in content_term:
+                                        print(">>> 不予警告");
                                         tn.write(b"\r");
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
                                         break;
                                     # Normal push procedure
                                     if "您覺得這篇文章" in content_term:
+                                        print(">>> 輸入推文");
                                         tn.write("3".encode('cp950'));
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
