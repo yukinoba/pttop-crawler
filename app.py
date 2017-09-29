@@ -383,7 +383,7 @@ while True:
                 # Check warning exists
                 has_warned = False;
                 soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                for userid in soup_postpush.select('div.push > span.push-userid'):
+                for userid in soup_postpush.select('span.push-userid'):
                     if userid.text.strip() in bm_list:
                         has_warned = True;
                 # Has no warning, add to the warning list
@@ -402,14 +402,14 @@ while True:
                     # Count bad evalutions
                     bad_count = 0;
                     soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                    for pushtag in soup_postpush.select('div.push > span.push-tag'):
+                    for pushtag in soup_postpush.select('span.push-tag'):
                         if "噓" in pushtag.text:
                             bad_count = bad_count + 1;
                     if bad_count > 10:
                         # Check warning exists
                         has_warned = False;
                         soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                        for userid in soup_postpush.select('div.push > span.push-userid'):
+                        for userid in soup_postpush.select('span.push-userid'):
                             if userid.text.strip() in bm_list:
                                 has_warned = True;
                         # Has no warning, add to the warning list
