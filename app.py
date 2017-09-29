@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 # Global setup definition
 bm_list = ['yukinoba', 'frojet'];
 login = {'account': 'yukinoba', 'password': 'ckmagic007'};
+chapter_starts = 880; #--2017.09.28 magic number
 # Function definition
 # Utility: convert PTT web filename to AIDu
 def fn2aidu( type, v1, v2 ):
@@ -285,10 +286,13 @@ def post_warning( postlist ):
             tn.write("Y".encode('cp950') + b"\r");
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
+# Function: Change board title with warning content when new chapter comes
+def modify_title( newtitle ):
+    pass
 # Main procedure
 last_newpush_list = [];
 warning_post_list = [];
-last_chapter_int = 880; #--106.09.28 magic number
+last_chapter_int = chapter_starts;
 default_board_topic = "[海賊] 人類的夢想，永無止境！";
 board_topic_keeper = None;
 conn = http.client.HTTPSConnection("www.ptt.cc");
@@ -340,13 +344,13 @@ while True:
     # Check bad evaluation
     soup_list = BeautifulSoup(content_list, 'html.parser');
     for postentry in soup_list.select('div.r-ent'):
-        # print(">>> 讀取評價：" + postentry.select('div.nrec')[0].text);
+        print(">>> 讀取評價：" + postentry.select('div.nrec')[0].text);
         # Skip annoucement posts
         if "[公告]" in postentry.select('div.title')[0].text:
             continue;
         if "X" in postentry.select('div.nrec')[0].text:
-            for postlink in postentry.select('div.title>a'):
-                # print(">>> 文章連結：" + postlink['href']);
+            for postlink in postentry.select('div.title > a'):
+                print(">>> 文章連結：" + postlink['href']);
                 post_href = postlink['href'];
                 # Enter warning post
                 conn.request("GET", post_href);
@@ -355,7 +359,7 @@ while True:
                 # Check warning exists
                 has_warned = False;
                 soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                for userid in soup_postpush.select('div.push>span.push-userid'):
+                for userid in soup_postpush.select('div.push > span.push-userid'):
                     if userid.text.strip() in bm_list:
                         has_warned = True;
                 # Has no warning, add to the warning list
@@ -364,7 +368,7 @@ while True:
         else:
             # Check push before bad evaluation occurs
             if not postentry.select('div.nrec')[0].text:
-                for postlink in postentry.select('div.title>a'):
+                for postlink in postentry.select('div.title > a'):
                     # print(">>> 文章連結：" + postlink['href']);
                     post_href = postlink['href'];
                     # Enter warning post
@@ -374,14 +378,14 @@ while True:
                     # Count bad evalutions
                     bad_count = 0;
                     soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                    for pushtag in soup_postpush.select('div.push>span.push-tag'):
+                    for pushtag in soup_postpush.select('div.push > span.push-tag'):
                         if "噓" in pushtag.text:
                             bad_count = bad_count + 1;
                     if bad_count > 10:
                         # Check warning exists
                         has_warned = False;
                         soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                        for userid in soup_postpush.select('div.push>span.push-userid'):
+                        for userid in soup_postpush.select('div.push > span.push-userid'):
                             if userid.text.strip() in bm_list:
                                 has_warned = True;
                         # Has no warning, add to the warning list
@@ -413,14 +417,40 @@ while True:
         # Save current board topic, and replace topic by warning message
         if newchapter:
             print(">>> 有新情報：" + str(last_chapter_int));
-            # TODO
+            board_topic_keeper = default_board_topic;
+            # Find current board topic from Hot Board or Comic Board Category
+            conn.request("GET", "/bbs/index.html");
+            response_hot = conn.getresponse();
+            content_hot = response_hot.read().decode(response_hot.headers.get_content_charset('utf-8'));
+            # Find current board topic from Hot Board
+            checkcategory = True;
+            soup_hot = BeautifulSoup(content_hot, 'html.parser');
+            for boardentry in soup_hot.select('div.b-ent'):
+                # print(">>> 看板名稱：" + boardentry.select('div.board-name')[0].text);
+                if "ONE_PIECE" in boardentry.select('div.board-name')[0].text:
+                    board_topic_keeper = boardentry.select('div.board-title')[0].text.rstrip().partition("◎")[2];
+                    checkcategory = False;
+            if checkcategory:
+                # I_Group >>> C_Artworks >>> AC_Comic
+                conn.request("GET", "/cls/17685");
+                response_category = conn.getresponse();
+                content_category = response_category.read().decode(response_category.headers.get_content_charset('utf-8'));
+                # Find current board topic from Comic Board Category
+                soup_category = BeautifulSoup(content_category, 'html.parser');
+                for boardentry in soup_category.select('div.b-ent'):
+                    # print(">>> 看板名稱：" + boardentry.select('div.board-name')[0].text);
+                    if "ONE_PIECE" in boardentry.select('div.board-name')[0].text:
+                        board_topic_keeper = boardentry.select('div.board-title')[0].text.rstrip().partition("◎")[2];
+            print(">>> 原有板標：" + board_topic_keeper);
+            print(">>> 更換板標：" + "[海賊] " + str(last_chapter_int) + "話發佈中，入內有雷");
+            modify_title("[海賊] " + str(last_chapter_int) + "話發佈中，入內有雷");
         else:
             print(">>> 沒有情報");
     else:
         # Change board topic back after Saturday
         if not board_topic_keeper is None:
             print(">>> 更換板標：" + board_topic_keeper);
-            # TODO
+            modify_title(board_topic_keeper);
             board_topic_keeper = None;
     # Rest a moment
     time.sleep(60 * 1);
