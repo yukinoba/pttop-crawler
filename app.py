@@ -278,12 +278,11 @@ def post_warning( postlist ):
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
                                         # Push content input field
-                                        if (login['account'] + ":") in content_term:
-                                            tn.write(warnmsg.encode('cp950') + b"\r");
-                                            time.sleep(3);
-                                            tn.write("y".encode('cp950') + b"\r");
-                                            time.sleep(3);
-                                            content_term = tn.read_very_eager().decode('uao_decode');
+                                        tn.write(warnmsg.encode('cp950') + b"\r");
+                                        time.sleep(3);
+                                        tn.write("y".encode('cp950') + b"\r");
+                                        time.sleep(3);
+                                        content_term = tn.read_very_eager().decode('uao_decode');
     # Logout process
     while not "主功能表" in content_term:
         print(">>> 回上一層");
