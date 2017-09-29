@@ -81,6 +81,7 @@ def prosecute_notify( pushlist ):
         print(">>> 主功能表");
         tn.write("m".encode('cp950'));
         time.sleep(3);
+        content_term = tn.read_very_eager().decode('uao_decode');
         tn.write(b"\x1b[C");
         time.sleep(3);
         content_term = tn.read_very_eager().decode('uao_decode');
@@ -89,6 +90,7 @@ def prosecute_notify( pushlist ):
             print(">>> 進入寄信");
             tn.write("m".encode('cp950'));
             time.sleep(3);
+            content_term = tn.read_very_eager().decode('uao_decode');
             tn.write(b"\x1b[C");
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
@@ -97,6 +99,7 @@ def prosecute_notify( pushlist ):
                 print(">>> 寄信名單");
                 tn.write("0".encode('cp950') + b"\r");
                 time.sleep(3);
+                content_term = tn.read_very_eager().decode('uao_decode');
                 tn.write("m".encode('cp950') + b"\r");
                 time.sleep(3);
                 content_term = tn.read_very_eager().decode('uao_decode');
@@ -111,9 +114,11 @@ def prosecute_notify( pushlist ):
                         print(">>> 檢舉通知");
                         tn.write(b"\x1b[6~");
                         time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
                         for pushtext in pushlist:
                             tn.write(pushtext.encode('cp950') + b"\r");
                             time.sleep(3);
+                            content_term = tn.read_very_eager().decode('uao_decode');
                         tn.write(b"\x18");
                         time.sleep(3);
                         content_term = tn.read_very_eager().decode('uao_decode');
@@ -145,6 +150,7 @@ def prosecute_notify( pushlist ):
         print(">>> 登出");
         tn.write(b"\x1b[D");
         time.sleep(3);
+        content_term = tn.read_very_eager().decode('uao_decode');
         tn.write(b"\x1b[C");
         time.sleep(3);
         content_term = tn.read_very_eager().decode('uao_decode');
@@ -246,6 +252,7 @@ def post_warning( postlist ):
                             #--2017.09.29 redraw the terminal content
                             tn.write(b"\x1b[C");
                             time.sleep(3);
+                            content_term = tn.read_very_eager().decode('uao_decode');
                             tn.write(b"\x1b[D");
                             time.sleep(3);
                             content_term = tn.read_very_eager().decode('uao_decode');
@@ -280,6 +287,7 @@ def post_warning( postlist ):
                                         # Push content input field
                                         tn.write(warnmsg.encode('cp950') + b"\r");
                                         time.sleep(3);
+                                        content_term = tn.read_very_eager().decode('uao_decode');
                                         tn.write("y".encode('cp950') + b"\r");
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
