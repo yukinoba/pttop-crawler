@@ -16,6 +16,9 @@ chapter_starts = 880; #--2017.09.28 magic number
 # Function definition
 # Utility: convert PTT web filename to AIDu
 def fn2aidu( type, v1, v2 ):
+    print(">>> type=" + str(type));
+    print(">>> v1=" + str(v1));
+    print(">>> v2=" + str(v2));
     aidu = None;
     type_int = 0;
     if type == "G":
@@ -30,6 +33,7 @@ def fn2aidu( type, v1, v2 ):
     return aidu;
 # Utility: convert PTT AIDu to AIDc
 def aidu2aidc( aidu ):
+    print(">>> aidu=" + str(aidu));
     aidc = None;
     aidc_cell = ['X','X','X','X','X','X','X','X'];
     aidc_map = ['0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','-','_'];
@@ -226,6 +230,7 @@ def post_warning( postlist ):
                         content_term = tn.read_very_eager().decode('uao_decode');
                         # Jump to post by AID
                         if "文章代碼" in content_term:
+                            print(">>> 跳至文章：" + "#" + aidc);
                             tn.write(aidc.encode('cp950') + b"\r");
                             time.sleep(3);
                             content_term = tn.read_very_eager().decode('uao_decode');
@@ -239,6 +244,7 @@ def post_warning( postlist ):
                             # Push warning message under the post
                             if "文章選讀" in content_term:
                                 for warnmsg in warning_message:
+                                    print(">>> 進行推文");
                                     tn.write("X".encode('cp950'));
                                     time.sleep(3);
                                     content_term = tn.read_very_eager().decode('uao_decode');
@@ -344,13 +350,13 @@ while True:
     # Check bad evaluation
     soup_list = BeautifulSoup(content_list, 'html.parser');
     for postentry in soup_list.select('div.r-ent'):
-        print(">>> 讀取評價：" + postentry.select('div.nrec')[0].text);
+        # print(">>> 讀取評價：" + postentry.select('div.nrec')[0].text);
         # Skip annoucement posts
         if "[公告]" in postentry.select('div.title')[0].text:
             continue;
         if "X" in postentry.select('div.nrec')[0].text:
             for postlink in postentry.select('div.title > a'):
-                print(">>> 文章連結：" + postlink['href']);
+                # print(">>> 文章連結：" + postlink['href']);
                 post_href = postlink['href'];
                 # Enter warning post
                 conn.request("GET", post_href);
@@ -393,7 +399,7 @@ while True:
                             warning_post_list.append(post_href);
     if len(warning_post_list) > 0:
         for post_href in warning_post_list:
-            print(">>> 需要警告：" + "https://www.ptt.cc/" + post_href);
+            print(">>> 需要警告：" + "https://www.ptt.cc" + post_href);
         post_warning(warning_post_list);
     else:
         print(">>> 不需警告");
