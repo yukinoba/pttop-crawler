@@ -243,6 +243,10 @@ def post_warning( postlist ):
                                 # Back to post list
                                 continue;
                             # Push warning message under the post
+                            #--2017.09.29 redraw the terminal content
+                            tn.write(b"\x12");
+                            time.sleep(3);
+                            content_term = tn.read_very_eager().decode('uao_decode');
                             #--2017.09.29 After post jump, there is no "文章選讀" keywords
                             if "看板資訊" in content_term:
                                 for warnmsg in warning_message:
