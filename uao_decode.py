@@ -6,7 +6,7 @@ import struct
 
 class Codec(codecs.Codec):
     def encode(self,input,errors='strict'):
-        uaostr = ''
+        uaostr = b''
         ptr = 0
         
         input_len = len(input)
@@ -16,11 +16,11 @@ class Codec(codecs.Codec):
                 uni = input[ptr:ptr+1]
                 mapkey = encoding_map[bytes(uni, 'utf-8')]
                 hex = struct.pack('>i', mapkey)[2:]
-                uaostr += chr(hex)
+                uaostr += hex
                 ptr += 1
             except:
                 uni = input[ptr:ptr+1]
-                uaostr += chr(uni.encode('cp950'))
+                uaostr += uni.encode('cp950')
                 ptr += 1
             
         return uaostr, len(uaostr)
