@@ -14,13 +14,13 @@ class Codec(codecs.Codec):
         while input_len > ptr:
             try :
                 uni = input[ptr:ptr+1]
-                mapkey = encoding_map[bytes(uni)]
+                mapkey = encoding_map[bytes(uni, 'utf-8')]
                 hex = struct.pack('>i', mapkey)[2:]
                 uaostr += char(hex)
                 ptr += 1
             except:
                 uni = input[ptr:ptr+1]
-                uaostr += chr(uni).encode('cp950')
+                uaostr += char(uni.encode('cp950'))
                 ptr += 1
             
         return uaostr, len(uaostr)
