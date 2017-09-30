@@ -47,8 +47,6 @@ def aidu2aidc( aidu ):
     return aidc;
 # Function: Send notification mail to board masters
 def prosecute_notify( pushlist ):
-    account = "yukinoba";
-    password = "ckmagic007";
     tn = telnetlib.Telnet('ptt.cc');
     time.sleep(3);
     content_term = tn.read_very_eager().decode('uao_decode');
@@ -314,167 +312,284 @@ def post_warning( postlist ):
 def modify_title( newtitle ):
     pass
 # Main procedure
-last_newpush_list = [];
-warning_post_list = [];
-last_chapter_int = chapter_starts;
-default_board_topic = "[海賊] 人類的夢想，永無止境！";
-board_topic_keeper = None;
-conn = http.client.HTTPSConnection("www.ptt.cc");
-# Work until shutdown
-while True:
-    conn.request("GET", "/bbs/ONE_PIECE/index.html");
-    response_list = conn.getresponse();
-    content_list = response_list.read().decode(response_list.headers.get_content_charset('utf-8'));
-    # Check prosecute push
-    soup_list = BeautifulSoup(content_list, 'html.parser');
-    for title in soup_list.select('div.title'):
-        # print(">>> 讀取標題：" + title.text);
-        if "檢舉區" in title.text:
-            # print(">>> 檢舉區連結：" + title.select('a')[0]['href']);
-            prosec_href = title.select('a')[0]['href'];
-            # Enter prosecute area
-            conn.request("GET", prosec_href);
-            response_prosec = conn.getresponse();
-            content_prosec = response_prosec.read().decode(response_prosec.headers.get_content_charset('utf-8'));
-            # Check the latest push
-            newcoming = False;
-            soup_prosec = BeautifulSoup(content_prosec, 'html.parser');
-            for lastedit in soup_prosec.select('span.f2'):
-                if "編輯" in lastedit.text:
-                    for newpush in lastedit.find_next_siblings('div', 'push'):
-                        tag = newpush.select('span.push-tag')[0].text.rstrip();
-                        userid = newpush.select('span.push-userid')[0].text.rstrip();
-                        content = newpush.select('span.push-content')[0].text.rstrip();
-                        ipdatetime = newpush.select('span.push-ipdatetime')[0].text.rstrip();
-                        # Format push text
-                        pushtext = '{} {}{}    {}'.format(tag, userid, content, ipdatetime);
-                        # Is there a new push?
-                        if pushtext in last_newpush_list:
-                            print(">>> 尚未處理：" + pushtext);
-                        else:
-                            if not newcoming:
-                                del last_newpush_list[:];
-                                newcoming = True;
-                            last_newpush_list.append(pushtext);
-                    if not newcoming:
-                        print(">>> 無新推文");
-                        del last_newpush_list[:];
-                    else:
-                        for newpushtext in last_newpush_list:
-                           print(">> 有新推文：" + newpushtext);
-                        prosecute_notify(last_newpush_list);
-    # Clear post list first
-    del warning_post_list[:];
-    # Check bad evaluation
-    soup_list = BeautifulSoup(content_list, 'html.parser');
-    for postentry in soup_list.select('div.r-ent'):
-        # print(">>> 讀取評價：" + postentry.select('div.nrec')[0].text);
-        # Skip annoucement posts
-        if "[公告]" in postentry.select('div.title')[0].text:
-            continue;
-        if "X" in postentry.select('div.nrec')[0].text:
-            for postlink in postentry.select('div.title > a'):
-                # print(">>> 文章連結：" + postlink['href']);
-                post_href = postlink['href'];
-                # Enter warning post
-                conn.request("GET", post_href);
-                response_post = conn.getresponse();
-                content_post = response_post.read().decode(response_post.headers.get_content_charset('utf-8'));
-                # Check warning exists
-                has_warned = False;
-                soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                for userid in soup_postpush.select('span.push-userid'):
-                    if userid.text.strip() in bm_list:
-                        has_warned = True;
-                # Has no warning, add to the warning list
-                if not has_warned:
-                    warning_post_list.append(post_href);
-        else:
-            # Check push before bad evaluation occurs
-            if not postentry.select('div.nrec')[0].text:
-                for postlink in postentry.select('div.title > a'):
-                    # print(">>> 文章連結：" + postlink['href']);
-                    post_href = postlink['href'];
-                    # Enter warning post
-                    conn.request("GET", post_href);
-                    response_post = conn.getresponse();
-                    content_post = response_post.read().decode(response_post.headers.get_content_charset('utf-8'));
-                    # Count bad evalutions
-                    bad_count = 0;
-                    soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                    for pushtag in soup_postpush.select('span.push-tag'):
-                        if "噓" in pushtag.text:
-                            bad_count = bad_count + 1;
-                    if bad_count > 10:
-                        # Check warning exists
-                        has_warned = False;
-                        soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                        for userid in soup_postpush.select('span.push-userid'):
-                            if userid.text.strip() in bm_list:
-                                has_warned = True;
-                        # Has no warning, add to the warning list
-                        if not has_warned:
-                            warning_post_list.append(post_href);
-    if len(warning_post_list) > 0:
-        for post_href in warning_post_list:
-            print(">>> 需要警告：" + "https://www.ptt.cc" + post_href);
-        post_warning(warning_post_list);
-    else:
-        print(">>> 不需警告");
-    # Check intelligence posts
-    # Only check on Wednesday to Saturday, Monday = 0, Tuesday = 1, Sunday = 6
-    weekday_int = datetime.date.today().weekday();
-    if weekday_int > 1 and weekday_int < 6:
-        newchapter = False;
-        soup_list = BeautifulSoup(content_list, 'html.parser');
-        for title in soup_list.select('div.title'):
-            # print(">>> 讀取標題：" + title.text);
-            if title.text.lstrip().startswith("[情報]"):
-                # Find next chapter number in post title
-                pattern = re.compile('[0-9]+');
-                number_list = re.findall(pattern, title.text);
-                for numbers in number_list:
-                    chapter_int = int(numbers, 10);
-                    if chapter_int > last_chapter_int and (chapter_int - last_chapter_int) == 1:
-                        last_chapter_int = chapter_int;
-                        newchapter = True;
-        # Save current board topic, and replace topic by warning message
-        if newchapter:
-            print(">>> 有新情報：" + str(last_chapter_int));
-            board_topic_keeper = default_board_topic;
-            # Find current board topic from Hot Board or Comic Board Category
-            conn.request("GET", "/bbs/index.html");
-            response_hot = conn.getresponse();
-            content_hot = response_hot.read().decode(response_hot.headers.get_content_charset('utf-8'));
-            # Find current board topic from Hot Board
-            checkcategory = True;
-            soup_hot = BeautifulSoup(content_hot, 'html.parser');
-            for boardentry in soup_hot.select('div.b-ent'):
-                # print(">>> 看板名稱：" + boardentry.select('div.board-name')[0].text);
-                if "ONE_PIECE" in boardentry.select('div.board-name')[0].text:
-                    board_topic_keeper = boardentry.select('div.board-title')[0].text.rstrip().partition("◎")[2];
-                    checkcategory = False;
-            if checkcategory:
-                # I_Group >>> C_Artworks >>> AC_Comic
-                conn.request("GET", "/cls/17685");
-                response_category = conn.getresponse();
-                content_category = response_category.read().decode(response_category.headers.get_content_charset('utf-8'));
-                # Find current board topic from Comic Board Category
-                soup_category = BeautifulSoup(content_category, 'html.parser');
-                for boardentry in soup_category.select('div.b-ent'):
-                    # print(">>> 看板名稱：" + boardentry.select('div.board-name')[0].text);
-                    if "ONE_PIECE" in boardentry.select('div.board-name')[0].text:
-                        board_topic_keeper = boardentry.select('div.board-title')[0].text.rstrip().partition("◎")[2];
-            print(">>> 原有板標：" + board_topic_keeper);
-            print(">>> 更換板標：" + "[海賊] " + str(last_chapter_int) + "話發佈中，入內有雷");
-            modify_title("[海賊] " + str(last_chapter_int) + "話發佈中，入內有雷");
-        else:
-            print(">>> 沒有情報");
-    else:
-        # Change board topic back after Saturday
-        if not board_topic_keeper is None:
-            print(">>> 更換板標：" + board_topic_keeper);
-            modify_title(board_topic_keeper);
-            board_topic_keeper = None;
-    # Rest a moment
-    time.sleep(60 * 1);
+# last_newpush_list = [];
+# warning_post_list = [];
+# last_chapter_int = chapter_starts;
+# default_board_topic = "[海賊] 人類的夢想，永無止境！";
+# board_topic_keeper = None;
+# conn = http.client.HTTPSConnection("www.ptt.cc");
+# # Work until shutdown
+# while True:
+    # conn.request("GET", "/bbs/ONE_PIECE/index.html");
+    # response_list = conn.getresponse();
+    # content_list = response_list.read().decode(response_list.headers.get_content_charset('utf-8'));
+    # # Check prosecute push
+    # soup_list = BeautifulSoup(content_list, 'html.parser');
+    # for title in soup_list.select('div.title'):
+        # # print(">>> 讀取標題：" + title.text);
+        # if "檢舉區" in title.text:
+            # # print(">>> 檢舉區連結：" + title.select('a')[0]['href']);
+            # prosec_href = title.select('a')[0]['href'];
+            # # Enter prosecute area
+            # conn.request("GET", prosec_href);
+            # response_prosec = conn.getresponse();
+            # content_prosec = response_prosec.read().decode(response_prosec.headers.get_content_charset('utf-8'));
+            # # Check the latest push
+            # newcoming = False;
+            # soup_prosec = BeautifulSoup(content_prosec, 'html.parser');
+            # for lastedit in soup_prosec.select('span.f2'):
+                # if "編輯" in lastedit.text:
+                    # for newpush in lastedit.find_next_siblings('div', 'push'):
+                        # tag = newpush.select('span.push-tag')[0].text.rstrip();
+                        # userid = newpush.select('span.push-userid')[0].text.rstrip();
+                        # content = newpush.select('span.push-content')[0].text.rstrip();
+                        # ipdatetime = newpush.select('span.push-ipdatetime')[0].text.rstrip();
+                        # # Format push text
+                        # pushtext = '{} {}{}    {}'.format(tag, userid, content, ipdatetime);
+                        # # Is there a new push?
+                        # if pushtext in last_newpush_list:
+                            # print(">>> 尚未處理：" + pushtext);
+                        # else:
+                            # if not newcoming:
+                                # del last_newpush_list[:];
+                                # newcoming = True;
+                            # last_newpush_list.append(pushtext);
+                    # if not newcoming:
+                        # print(">>> 無新推文");
+                        # del last_newpush_list[:];
+                    # else:
+                        # for newpushtext in last_newpush_list:
+                           # print(">> 有新推文：" + newpushtext);
+                        # prosecute_notify(last_newpush_list);
+    # # Clear post list first
+    # del warning_post_list[:];
+    # # Check bad evaluation
+    # soup_list = BeautifulSoup(content_list, 'html.parser');
+    # for postentry in soup_list.select('div.r-ent'):
+        # # print(">>> 讀取評價：" + postentry.select('div.nrec')[0].text);
+        # # Skip annoucement posts
+        # if "[公告]" in postentry.select('div.title')[0].text:
+            # continue;
+        # if "X" in postentry.select('div.nrec')[0].text:
+            # for postlink in postentry.select('div.title > a'):
+                # # print(">>> 文章連結：" + postlink['href']);
+                # post_href = postlink['href'];
+                # # Enter warning post
+                # conn.request("GET", post_href);
+                # response_post = conn.getresponse();
+                # content_post = response_post.read().decode(response_post.headers.get_content_charset('utf-8'));
+                # # Check warning exists
+                # has_warned = False;
+                # soup_postpush = BeautifulSoup(content_post, 'html.parser');
+                # for userid in soup_postpush.select('span.push-userid'):
+                    # if userid.text.strip() in bm_list:
+                        # has_warned = True;
+                # # Has no warning, add to the warning list
+                # if not has_warned:
+                    # warning_post_list.append(post_href);
+        # else:
+            # # Check push before bad evaluation occurs
+            # if not postentry.select('div.nrec')[0].text:
+                # for postlink in postentry.select('div.title > a'):
+                    # # print(">>> 文章連結：" + postlink['href']);
+                    # post_href = postlink['href'];
+                    # # Enter warning post
+                    # conn.request("GET", post_href);
+                    # response_post = conn.getresponse();
+                    # content_post = response_post.read().decode(response_post.headers.get_content_charset('utf-8'));
+                    # # Count bad evalutions
+                    # bad_count = 0;
+                    # soup_postpush = BeautifulSoup(content_post, 'html.parser');
+                    # for pushtag in soup_postpush.select('span.push-tag'):
+                        # if "噓" in pushtag.text:
+                            # bad_count = bad_count + 1;
+                    # if bad_count > 10:
+                        # # Check warning exists
+                        # has_warned = False;
+                        # soup_postpush = BeautifulSoup(content_post, 'html.parser');
+                        # for userid in soup_postpush.select('span.push-userid'):
+                            # if userid.text.strip() in bm_list:
+                                # has_warned = True;
+                        # # Has no warning, add to the warning list
+                        # if not has_warned:
+                            # warning_post_list.append(post_href);
+    # if len(warning_post_list) > 0:
+        # for post_href in warning_post_list:
+            # print(">>> 需要警告：" + "https://www.ptt.cc" + post_href);
+        # post_warning(warning_post_list);
+    # else:
+        # print(">>> 不需警告");
+    # # Check intelligence posts
+    # # Only check on Wednesday to Saturday, Monday = 0, Tuesday = 1, Sunday = 6
+    # weekday_int = datetime.date.today().weekday();
+    # if weekday_int > 1 and weekday_int < 6:
+        # newchapter = False;
+        # soup_list = BeautifulSoup(content_list, 'html.parser');
+        # for title in soup_list.select('div.title'):
+            # # print(">>> 讀取標題：" + title.text);
+            # if title.text.lstrip().startswith("[情報]"):
+                # # Find next chapter number in post title
+                # pattern = re.compile('[0-9]+');
+                # number_list = re.findall(pattern, title.text);
+                # for numbers in number_list:
+                    # chapter_int = int(numbers, 10);
+                    # if chapter_int > last_chapter_int and (chapter_int - last_chapter_int) == 1:
+                        # last_chapter_int = chapter_int;
+                        # newchapter = True;
+        # # Save current board topic, and replace topic by warning message
+        # if newchapter:
+            # print(">>> 有新情報：" + str(last_chapter_int));
+            # board_topic_keeper = default_board_topic;
+            # # Find current board topic from Hot Board or Comic Board Category
+            # conn.request("GET", "/bbs/index.html");
+            # response_hot = conn.getresponse();
+            # content_hot = response_hot.read().decode(response_hot.headers.get_content_charset('utf-8'));
+            # # Find current board topic from Hot Board
+            # checkcategory = True;
+            # soup_hot = BeautifulSoup(content_hot, 'html.parser');
+            # for boardentry in soup_hot.select('div.b-ent'):
+                # # print(">>> 看板名稱：" + boardentry.select('div.board-name')[0].text);
+                # if "ONE_PIECE" in boardentry.select('div.board-name')[0].text:
+                    # board_topic_keeper = boardentry.select('div.board-title')[0].text.rstrip().partition("◎")[2];
+                    # checkcategory = False;
+            # if checkcategory:
+                # # I_Group >>> C_Artworks >>> AC_Comic
+                # conn.request("GET", "/cls/17685");
+                # response_category = conn.getresponse();
+                # content_category = response_category.read().decode(response_category.headers.get_content_charset('utf-8'));
+                # # Find current board topic from Comic Board Category
+                # soup_category = BeautifulSoup(content_category, 'html.parser');
+                # for boardentry in soup_category.select('div.b-ent'):
+                    # # print(">>> 看板名稱：" + boardentry.select('div.board-name')[0].text);
+                    # if "ONE_PIECE" in boardentry.select('div.board-name')[0].text:
+                        # board_topic_keeper = boardentry.select('div.board-title')[0].text.rstrip().partition("◎")[2];
+            # print(">>> 原有板標：" + board_topic_keeper);
+            # print(">>> 更換板標：" + "[海賊] " + str(last_chapter_int) + "話發佈中，入內有雷");
+            # modify_title("[海賊] " + str(last_chapter_int) + "話發佈中，入內有雷");
+        # else:
+            # print(">>> 沒有情報");
+    # else:
+        # # Change board topic back after Saturday
+        # if not board_topic_keeper is None:
+            # print(">>> 更換板標：" + board_topic_keeper);
+            # modify_title(board_topic_keeper);
+            # board_topic_keeper = None;
+    # # Rest a moment
+    # time.sleep(60 * 1);
+# Function: Test uao_encode mail content and push
+def test_mail( content ):
+    tn = telnetlib.Telnet('ptt.cc');
+    time.sleep(3);
+    content_term = tn.read_very_eager().decode('uao_decode');
+    # Login process
+    if "請輸入代號" in content_term:
+        print(">>> 輸入帳號");
+        tn.write(login['account'].encode('uao_decode') + b"\r");
+        time.sleep(3);
+        content_term = tn.read_very_eager().decode('uao_decode');
+        # Enter password
+        if "請輸入您的密碼" in content_term:
+            print(">>> 輸入密碼");
+            tn.write(login['password'].encode('uao_decode') + b"\r");
+            time.sleep(3);
+            content_term = tn.read_very_eager().decode('uao_decode');
+            # Duplicated login record
+            if "您想刪除其他重複登入的連線嗎" in content_term:
+                print(">>> 刪除重複登入");
+                tn.write("n".encode('uao_decode') + b"\r");
+                time.sleep(5);
+                content_term = tn.read_very_eager().decode('uao_decode');
+            # Dashboard
+            if "請按任意鍵繼續" in content_term:
+                print(">>> 登入成功");
+                tn.write(" ".encode('uao_decode'));
+                time.sleep(3);
+                content_term = tn.read_very_eager().decode('uao_decode');
+    # Enter mailbox and send notifications
+    if "主功能表" in content_term:
+        print(">>> 主功能表");
+        tn.write("m".encode('uao_decode'));
+        time.sleep(3);
+        content_term = tn.read_very_eager().decode('uao_decode');
+        tn.write(b"\x1b[C");
+        time.sleep(3);
+        content_term = tn.read_very_eager().decode('uao_decode');
+        # Email
+        if "電子郵件" in content_term:
+            print(">>> 進入寄信");
+            tn.write("m".encode('uao_decode'));
+            time.sleep(3);
+            content_term = tn.read_very_eager().decode('uao_decode');
+            tn.write(b"\x1b[C");
+            time.sleep(3);
+            content_term = tn.read_very_eager().decode('uao_decode');
+            # Mailing list
+            if "群組寄信名單" in content_term:
+                print(">>> 寄信名單");
+                tn.write("1".encode('uao_decode') + b"\r");
+                time.sleep(3);
+                content_term = tn.read_very_eager().decode('uao_decode');
+                tn.write("m".encode('uao_decode') + b"\r");
+                time.sleep(3);
+                content_term = tn.read_very_eager().decode('uao_decode');
+                # Topic
+                if "主題" in content_term:
+                    print(">>> 信件主旨");
+                    tn.write("有新檢舉推文通知".encode('uao_decode') + b"\r");
+                    time.sleep(3);
+                    content_term = tn.read_very_eager().decode('uao_decode');
+                    # Prosecute push
+                    if "通告" in content_term:
+                        print(">>> 檢舉通知");
+                        tn.write(b"\x1b[6~");
+                        time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
+                        tn.write(content.encode('uao_decode') + b"\r");
+                        time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
+                        tn.write(b"\x18");
+                        time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
+                        # Save and send
+                        if "檔案處理" in content_term:
+                            print(">>> 寄出信件");
+                            tn.write("s".encode('uao_decode') + b"\r");
+                            time.sleep(3);
+                            content_term = tn.read_very_eager().decode('uao_decode');
+                            # Signature
+                            if "簽名檔" in content_term:
+                                print(">>> 不加簽名");
+                                tn.write("0".encode('uao_decode') + b"\r");
+                                time.sleep(3);
+                                content_term = tn.read_very_eager().decode('uao_decode');
+                                # Copy
+                                if "自存底稿" in content_term:
+                                    print(">>> 不存底稿");
+                                    tn.write("n".encode('uao_decode') + b"\r");
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+    # Logout process
+    while not "主功能表" in content_term:
+        print(">>> 回上一層");
+        tn.write(b"\x1b[D");
+        time.sleep(3);
+        content_term = tn.read_very_eager().decode('uao_decode');
+    if "主功能表" in content_term:
+        print(">>> 登出");
+        tn.write(b"\x1b[D");
+        time.sleep(3);
+        content_term = tn.read_very_eager().decode('uao_decode');
+        tn.write(b"\x1b[C");
+        time.sleep(3);
+        content_term = tn.read_very_eager().decode('uao_decode');
+        # Confirm logout
+        if "您確定要離開" in content_term:
+            print(">>> 確認登出");
+            tn.write("Y".encode('uao_decode') + b"\r");
+            time.sleep(3);
+            content_term = tn.read_very_eager().decode('uao_decode');
+def test_push( content ):
+    pass
+# Test procedure
+test_mail( "這是一封測試信件" );
+test_push( "測試推文" );
