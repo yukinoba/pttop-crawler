@@ -229,67 +229,68 @@ def post_warning( postlist ):
                         aidc = aidu2aidc(fn2aidu(type, v1, v2));
                     if aidc is None:
                         continue;
-                    else:
-                        tn.write("#".encode('uao_decode'));
+                    tn.write("#".encode('uao_decode'));
+                    time.sleep(3);
+                    content_term = tn.read_very_eager().decode('uao_decode');
+                    # Jump to post by AID
+                    if "文章代碼" in content_term:
+                        print(">>> 跳至文章：" + "#" + aidc);
+                        tn.write(aidc.encode('uao_decode') + b"\r");
                         time.sleep(3);
                         content_term = tn.read_very_eager().decode('uao_decode');
-                        # Jump to post by AID
-                        if "文章代碼" in content_term:
-                            print(">>> 跳至文章：" + "#" + aidc);
-                            tn.write(aidc.encode('uao_decode') + b"\r");
+                        # Post not exists
+                        if "請按任意鍵繼續" in content_term:
+                            print(">>> 沒有文章");
+                            tn.write(" ".encode('uao_decode'));
                             time.sleep(3);
                             content_term = tn.read_very_eager().decode('uao_decode');
-                            # Post not exists
-                            if "請按任意鍵繼續" in content_term:
-                                print(">>> 沒有文章");
-                                tn.write(" ".encode('uao_decode'));
+                            # Back to post list
+                            continue;
+                        #--2017.09.29 redraw the terminal content
+                        tn.write(b"\x1b[C");
+                        time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
+                        tn.write(b"\x1b[D");
+                        time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
+                        #--2017.09.29 After post jump, there is no "文章選讀" keywords
+                        if "文章選讀" in content_term:
+                            # Push warning message under the post
+                            for warnmsg in warning_message:
+                                print(">>> 進行推文");
+                                tn.write("X".encode('uao_decode'));
                                 time.sleep(3);
                                 content_term = tn.read_very_eager().decode('uao_decode');
-                                # Back to post list
-                                continue;
-                            # Push warning message under the post
-                            #--2017.09.29 redraw the terminal content
-                            tn.write(b"\x1b[C");
-                            time.sleep(3);
-                            content_term = tn.read_very_eager().decode('uao_decode');
-                            tn.write(b"\x1b[D");
-                            time.sleep(3);
-                            content_term = tn.read_very_eager().decode('uao_decode');
-                            #--2017.09.29 After post jump, there is no "文章選讀" keywords
-                            if "文章選讀" in content_term:
-                                for warnmsg in warning_message:
-                                    print(">>> 進行推文");
-                                    tn.write("X".encode('uao_decode'));
+                                # Possible push procedures
+                                # Push is prohibited
+                                if "禁止推薦" in content_term:
+                                    print(">>> 禁止推文");
+                                    tn.write(" ".encode('uao_decode'));
                                     time.sleep(3);
                                     content_term = tn.read_very_eager().decode('uao_decode');
-                                    # Possible push procedures
-                                    # Push is prohibited
-                                    if "禁止推薦" in content_term:
-                                        print(">>> 禁止推文");
-                                        tn.write(" ".encode('uao_decode'));
-                                        time.sleep(3);
-                                        content_term = tn.read_very_eager().decode('uao_decode');
-                                        break;
-                                    # Login account as same as author
-                                    if "作者本人" in content_term:
-                                        print(">>> 不予警告");
-                                        tn.write(b"\r");
-                                        time.sleep(3);
-                                        content_term = tn.read_very_eager().decode('uao_decode');
-                                        break;
-                                    # Normal push procedure
-                                    if "您覺得這篇文章" in content_term:
-                                        print(">>> 輸入推文");
-                                        tn.write("3".encode('uao_decode'));
-                                        time.sleep(3);
-                                        content_term = tn.read_very_eager().decode('uao_decode');
-                                        # Push content input field
-                                        tn.write(warnmsg.encode('uao_decode') + b"\r");
-                                        time.sleep(3);
-                                        content_term = tn.read_very_eager().decode('uao_decode');
-                                        tn.write("y".encode('uao_decode') + b"\r");
-                                        time.sleep(3);
-                                        content_term = tn.read_very_eager().decode('uao_decode');
+                                    break;
+                                # Login account as same as author
+                                if "作者本人" in content_term:
+                                    print(">>> 不予警告");
+                                    tn.write(b"\r");
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                    break;
+                                # Normal push procedure
+                                if "您覺得這篇文章" in content_term:
+                                    print(">>> 輸入推文");
+                                    # Using comment-type push
+                                    tn.write("3".encode('uao_decode'));
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                    # Push content input field
+                                    tn.write(warnmsg.encode('uao_decode') + b"\r");
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                    # Confirm the push
+                                    tn.write("y".encode('uao_decode') + b"\r");
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
     # Logout process
     while not "主功能表" in content_term:
         print(">>> 回上一層");
