@@ -544,7 +544,7 @@ def test_push( postlink ):
                     v2 = mo.group(3);
                     aidc = aidu2aidc(fn2aidu(type, v1, v2));
                 if aidc is None:
-                    continue;
+                    pass
                 else:
                     tn.write("#".encode('uao_decode'));
                     time.sleep(3);
