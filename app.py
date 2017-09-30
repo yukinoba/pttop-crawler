@@ -285,7 +285,7 @@ def post_warning( postlist ):
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
                                         # Push content input field
-                                        tn.write(warnmsg.encode('cp950') + b"\r");
+                                        tn.write(warnmsg.encode('uao_decode') + b"\r");
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
                                         tn.write("y".encode('cp950') + b"\r");
