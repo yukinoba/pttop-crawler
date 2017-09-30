@@ -53,31 +53,31 @@ def prosecute_notify( pushlist ):
     # Login process
     if "請輸入代號" in content_term:
         print(">>> 輸入帳號");
-        tn.write(login['account'].encode('cp950') + b"\r");
+        tn.write(login['account'].encode('uao_decode') + b"\r");
         time.sleep(3);
         content_term = tn.read_very_eager().decode('uao_decode');
         # Enter password
         if "請輸入您的密碼" in content_term:
             print(">>> 輸入密碼");
-            tn.write(login['password'].encode('cp950') + b"\r");
+            tn.write(login['password'].encode('uao_decode') + b"\r");
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
             # Duplicated login record
             if "您想刪除其他重複登入的連線嗎" in content_term:
                 print(">>> 刪除重複登入");
-                tn.write("n".encode('cp950') + b"\r");
+                tn.write("n".encode('uao_decode') + b"\r");
                 time.sleep(5);
                 content_term = tn.read_very_eager().decode('uao_decode');
             # Dashboard
             if "請按任意鍵繼續" in content_term:
                 print(">>> 登入成功");
-                tn.write(" ".encode('cp950'));
+                tn.write(" ".encode('uao_decode'));
                 time.sleep(3);
                 content_term = tn.read_very_eager().decode('uao_decode');
     # Enter mailbox and send notifications
     if "主功能表" in content_term:
         print(">>> 主功能表");
-        tn.write("m".encode('cp950'));
+        tn.write("m".encode('uao_decode'));
         time.sleep(3);
         content_term = tn.read_very_eager().decode('uao_decode');
         tn.write(b"\x1b[C");
@@ -86,7 +86,7 @@ def prosecute_notify( pushlist ):
         # Email
         if "電子郵件" in content_term:
             print(">>> 進入寄信");
-            tn.write("m".encode('cp950'));
+            tn.write("m".encode('uao_decode'));
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
             tn.write(b"\x1b[C");
@@ -95,16 +95,16 @@ def prosecute_notify( pushlist ):
             # Mailing list
             if "群組寄信名單" in content_term:
                 print(">>> 寄信名單");
-                tn.write("0".encode('cp950') + b"\r");
+                tn.write("0".encode('uao_decode') + b"\r");
                 time.sleep(3);
                 content_term = tn.read_very_eager().decode('uao_decode');
-                tn.write("m".encode('cp950') + b"\r");
+                tn.write("m".encode('uao_decode') + b"\r");
                 time.sleep(3);
                 content_term = tn.read_very_eager().decode('uao_decode');
                 # Topic
                 if "主題" in content_term:
                     print(">>> 信件主旨");
-                    tn.write("有新檢舉推文通知".encode('cp950') + b"\r");
+                    tn.write("有新檢舉推文通知".encode('uao_decode') + b"\r");
                     time.sleep(3);
                     content_term = tn.read_very_eager().decode('uao_decode');
                     # Prosecute push
@@ -114,7 +114,7 @@ def prosecute_notify( pushlist ):
                         time.sleep(3);
                         content_term = tn.read_very_eager().decode('uao_decode');
                         for pushtext in pushlist:
-                            tn.write(pushtext.encode('cp950') + b"\r");
+                            tn.write(pushtext.encode('uao_decode') + b"\r");
                             time.sleep(3);
                             content_term = tn.read_very_eager().decode('uao_decode');
                         tn.write(b"\x18");
@@ -123,19 +123,19 @@ def prosecute_notify( pushlist ):
                         # Save and send
                         if "檔案處理" in content_term:
                             print(">>> 寄出信件");
-                            tn.write("s".encode('cp950') + b"\r");
+                            tn.write("s".encode('uao_decode') + b"\r");
                             time.sleep(3);
                             content_term = tn.read_very_eager().decode('uao_decode');
                             # Signature
                             if "簽名檔" in content_term:
                                 print(">>> 不加簽名");
-                                tn.write("0".encode('cp950') + b"\r");
+                                tn.write("0".encode('uao_decode') + b"\r");
                                 time.sleep(3);
                                 content_term = tn.read_very_eager().decode('uao_decode');
                                 # Copy
                                 if "自存底稿" in content_term:
                                     print(">>> 不存底稿");
-                                    tn.write("n".encode('cp950') + b"\r");
+                                    tn.write("n".encode('uao_decode') + b"\r");
                                     time.sleep(3);
                                     content_term = tn.read_very_eager().decode('uao_decode');
     # Logout process
@@ -155,7 +155,7 @@ def prosecute_notify( pushlist ):
         # Confirm logout
         if "您確定要離開" in content_term:
             print(">>> 確認登出");
-            tn.write("Y".encode('cp950') + b"\r");
+            tn.write("Y".encode('uao_decode') + b"\r");
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
 # Function: Write warning message to those bad evaluation posts
@@ -173,43 +173,43 @@ def post_warning( postlist ):
     # Login process
     if "請輸入代號" in content_term:
         print(">>> 輸入帳號");
-        tn.write(login['account'].encode('cp950') + b"\r");
+        tn.write(login['account'].encode('uao_decode') + b"\r");
         time.sleep(3);
         content_term = tn.read_very_eager().decode('uao_decode');
         # Enter password
         if "請輸入您的密碼" in content_term:
             print(">>> 輸入密碼");
-            tn.write(login['password'].encode('cp950') + b"\r");
+            tn.write(login['password'].encode('uao_decode') + b"\r");
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
             # Duplicated login record
             if "您想刪除其他重複登入的連線嗎" in content_term:
                 print(">>> 刪除重複登入");
-                tn.write("n".encode('cp950') + b"\r");
+                tn.write("n".encode('uao_decode') + b"\r");
                 time.sleep(5);
                 content_term = tn.read_very_eager().decode('uao_decode');
             # Dashboard
             if "請按任意鍵繼續" in content_term:
                 print(">>> 登入成功");
-                tn.write(" ".encode('cp950'));
+                tn.write(" ".encode('uao_decode'));
                 time.sleep(3);
                 content_term = tn.read_very_eager().decode('uao_decode');
     # Enter specific board
     if "主功能表" in content_term:
         print(">>> 主功能表");
-        tn.write("s".encode('cp950'));
+        tn.write("s".encode('uao_decode'));
         time.sleep(3);
         content_term = tn.read_very_eager().decode('uao_decode');
         # Choose board
         if "選擇看板" in content_term:
             print(">>> 選擇看板");
-            tn.write("ONE_PIECE".encode('cp950') + b"\r");
+            tn.write("ONE_PIECE".encode('uao_decode') + b"\r");
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
             # Board entry
             if "動畫播放中" in content_term:
                 print(">>> 進板畫面");
-                tn.write("q".encode('cp950'));
+                tn.write("q".encode('uao_decode'));
                 time.sleep(3);
                 content_term = tn.read_very_eager().decode('uao_decode');
             # Post list
@@ -229,19 +229,19 @@ def post_warning( postlist ):
                     if aidc is None:
                         continue;
                     else:
-                        tn.write("#".encode('cp950'));
+                        tn.write("#".encode('uao_decode'));
                         time.sleep(3);
                         content_term = tn.read_very_eager().decode('uao_decode');
                         # Jump to post by AID
                         if "文章代碼" in content_term:
                             print(">>> 跳至文章：" + "#" + aidc);
-                            tn.write(aidc.encode('cp950') + b"\r");
+                            tn.write(aidc.encode('uao_decode') + b"\r");
                             time.sleep(3);
                             content_term = tn.read_very_eager().decode('uao_decode');
                             # Post not exists
                             if "請按任意鍵繼續" in content_term:
                                 print(">>> 沒有文章");
-                                tn.write(" ".encode('cp950'));
+                                tn.write(" ".encode('uao_decode'));
                                 time.sleep(3);
                                 content_term = tn.read_very_eager().decode('uao_decode');
                                 # Back to post list
@@ -258,14 +258,14 @@ def post_warning( postlist ):
                             if "文章選讀" in content_term:
                                 for warnmsg in warning_message:
                                     print(">>> 進行推文");
-                                    tn.write("X".encode('cp950'));
+                                    tn.write("X".encode('uao_decode'));
                                     time.sleep(3);
                                     content_term = tn.read_very_eager().decode('uao_decode');
                                     # Possible push procedures
                                     # Push is prohibited
                                     if "禁止推薦" in content_term:
                                         print(">>> 禁止推文");
-                                        tn.write(" ".encode('cp950'));
+                                        tn.write(" ".encode('uao_decode'));
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
                                         break;
@@ -279,14 +279,14 @@ def post_warning( postlist ):
                                     # Normal push procedure
                                     if "您覺得這篇文章" in content_term:
                                         print(">>> 輸入推文");
-                                        tn.write("3".encode('cp950'));
+                                        tn.write("3".encode('uao_decode'));
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
                                         # Push content input field
                                         tn.write(warnmsg.encode('uao_decode') + b"\r");
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
-                                        tn.write("y".encode('cp950') + b"\r");
+                                        tn.write("y".encode('uao_decode') + b"\r");
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
     # Logout process
@@ -305,7 +305,7 @@ def post_warning( postlist ):
         # Confirm logout
         if "您確定要離開" in content_term:
             print(">>> 確認登出");
-            tn.write("Y".encode('cp950') + b"\r");
+            tn.write("Y".encode('uao_decode') + b"\r");
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
 # Function: Change board title with warning content when new chapter comes
@@ -549,6 +549,7 @@ def test_push( postlink ):
                     tn.write("#".encode('uao_decode'));
                     time.sleep(3);
                     content_term = tn.read_very_eager().decode('uao_decode');
+                    print(content_term);
                     # Jump to post by AID
                     if "文章代碼" in content_term:
                         print(">>> 跳至文章：" + "#" + aidc);
@@ -571,10 +572,11 @@ def test_push( postlink ):
                             tn.write(b"\x1b[D");
                             time.sleep(3);
                             content_term = tn.read_very_eager().decode('uao_decode');
+                            print(content_term);
                             #--2017.09.29 After post jump, there is no "文章選讀" keywords
                             if "文章選讀" in content_term:
                                 for warnmsg in warning_message:
-                                    print(">>> 進行推文");
+                                    print(">>> 進行推文：" + warnmsg);
                                     tn.write("X".encode('uao_decode'));
                                     time.sleep(3);
                                     content_term = tn.read_very_eager().decode('uao_decode');
@@ -599,13 +601,16 @@ def test_push( postlink ):
                                         tn.write("3".encode('uao_decode'));
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
+                                        print(content_term);
                                         # Push content input field
                                         tn.write(warnmsg.encode('uao_decode') + b"\r");
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
+                                        print(content_term);
                                         tn.write("y".encode('uao_decode') + b"\r");
                                         time.sleep(3);
                                         content_term = tn.read_very_eager().decode('uao_decode');
+                                        print(content_term);
     # Logout process
     while not "主功能表" in content_term:
         print(">>> 回上一層");
