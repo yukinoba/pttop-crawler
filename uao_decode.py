@@ -6,15 +6,33 @@ import struct
 
 class Codec(codecs.Codec):
     def encode(self,input,errors='strict'):
-        encdoe_str = ''
-        for unichar in input:
-            _ucode = ord(unichar)
-            if _ucode in encoding_map:
-                _bcode = encoding_map[_ucode]
-                encdoe_str += struct.pack('>i',_bcode)[2:]
-            else:
-                encdoe_str += unichar.encode('cp950')
-        return encdoe_str,len(encdoe_str)
+        uaostr = ''
+        ptr = 0
+        
+        input_len = len(input)
+        
+        while input_len > ptr:
+            try :
+                uni = unistr[ptr:ptr+1]
+                mapkey = encoding_map[bytes(uni)]
+                hex = struct.pack('>i', mapkey)[2:]
+                uaostr += char(hex)
+                ptr += 1
+            except:
+                uni = unistr[ptr:ptr+1]
+                uaostr += chr(uni).encode('cp950')
+                ptr += 1
+            
+        return uaostr, len(uaostr)
+        # for unichar in input:
+            # _ucode = ord(unichar)
+            # if _ucode in encoding_map:
+                # _bcode = encoding_map[_ucode]
+                # encdoe_str += struct.pack('>i',_bcode)[2:]
+            # else:
+                # uao = chr(_ucode)
+                # encdoe_str += chr(_ucode).encode('cp950')
+        # return encdoe_str,len(encdoe_str)
 
     def decode(self,input,errors='strict'):
         unistr = ''
