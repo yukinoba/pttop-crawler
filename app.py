@@ -476,8 +476,15 @@ def modify_title( newtitle ):
             # board_topic_keeper = None;
     # # Rest a moment
     # time.sleep(60 * 1);
-# Function: Test uao_encode mail content and push
-def test_mail( content ):
+# Function: test push
+def test_push( postlink ):
+    warning_message = [
+        "本板板旨為討論 ONE PIECE作品相關內容，若有無涉作品之",
+        "討論還請多加留意板規相關規範，並請尊重各方板友之意見",
+        "請勿作情緒性人身攻擊之發言內容；如有需要修正推文內容",
+        "請自行洽原發文者聯繫請求協助。",
+        "以上根據本板板規C-2、I(3)給予提醒"
+    ];
     tn = telnetlib.Telnet('ptt.cc');
     time.sleep(3);
     content_term = tn.read_very_eager().decode('uao_decode');
@@ -505,67 +512,98 @@ def test_mail( content ):
                 tn.write(" ".encode('uao_decode'));
                 time.sleep(3);
                 content_term = tn.read_very_eager().decode('uao_decode');
-    # Enter mailbox and send notifications
+    # Enter specific board
     if "主功能表" in content_term:
         print(">>> 主功能表");
-        tn.write("m".encode('uao_decode'));
+        tn.write("s".encode('uao_decode'));
         time.sleep(3);
         content_term = tn.read_very_eager().decode('uao_decode');
-        tn.write(b"\x1b[C");
-        time.sleep(3);
-        content_term = tn.read_very_eager().decode('uao_decode');
-        # Email
-        if "電子郵件" in content_term:
-            print(">>> 進入寄信");
-            tn.write("m".encode('uao_decode'));
+        # Choose board
+        if "選擇看板" in content_term:
+            print(">>> 選擇看板");
+            tn.write("ONE_PIECE".encode('uao_decode') + b"\r");
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
-            tn.write(b"\x1b[C");
-            time.sleep(3);
-            content_term = tn.read_very_eager().decode('uao_decode');
-            # Mailing list
-            if "群組寄信名單" in content_term:
-                print(">>> 寄信名單");
-                tn.write("1".encode('uao_decode') + b"\r");
+            # Board entry
+            if "動畫播放中" in content_term:
+                print(">>> 進板畫面");
+                tn.write("q".encode('uao_decode'));
                 time.sleep(3);
                 content_term = tn.read_very_eager().decode('uao_decode');
-                tn.write("m".encode('uao_decode') + b"\r");
-                time.sleep(3);
-                content_term = tn.read_very_eager().decode('uao_decode');
-                # Topic
-                if "主題" in content_term:
-                    print(">>> 信件主旨");
-                    tn.write("有新檢舉推文通知".encode('uao_decode') + b"\r");
+            # Post list
+            if "文章選讀" in content_term:
+                print(">>> 文章列表");
+                # Go to the post
+                # Convert web BBS postlink filename to telnet BBS post AIDc
+                aidc = None;
+                pattern = re.compile('\/([MG]{1})\.([0-9]+)\.A\.([0-9A-F]+)\.html');
+                mo = re.search(pattern, postlink);
+                if mo:
+                    type = mo.group(1);
+                    v1 = mo.group(2);
+                    v2 = mo.group(3);
+                    aidc = aidu2aidc(fn2aidu(type, v1, v2));
+                if aidc is None:
+                    continue;
+                else:
+                    tn.write("#".encode('uao_decode'));
                     time.sleep(3);
                     content_term = tn.read_very_eager().decode('uao_decode');
-                    # Prosecute push
-                    if "通告" in content_term:
-                        print(">>> 檢舉通知");
-                        tn.write(b"\x1b[6~");
+                    # Jump to post by AID
+                    if "文章代碼" in content_term:
+                        print(">>> 跳至文章：" + "#" + aidc);
+                        tn.write(aidc.encode('uao_decode') + b"\r");
                         time.sleep(3);
                         content_term = tn.read_very_eager().decode('uao_decode');
-                        tn.write(content.encode('uao_decode') + b"\r");
-                        time.sleep(3);
-                        content_term = tn.read_very_eager().decode('uao_decode');
-                        tn.write(b"\x18");
-                        time.sleep(3);
-                        content_term = tn.read_very_eager().decode('uao_decode');
-                        # Save and send
-                        if "檔案處理" in content_term:
-                            print(">>> 寄出信件");
-                            tn.write("s".encode('uao_decode') + b"\r");
+                        # Post not exists
+                        if "請按任意鍵繼續" in content_term:
+                            print(">>> 沒有文章");
+                            tn.write(" ".encode('uao_decode'));
                             time.sleep(3);
                             content_term = tn.read_very_eager().decode('uao_decode');
-                            # Signature
-                            if "簽名檔" in content_term:
-                                print(">>> 不加簽名");
-                                tn.write("0".encode('uao_decode') + b"\r");
+                            # Back to post list
+                            continue;
+                        # Push warning message under the post
+                        #--2017.09.29 redraw the terminal content
+                        tn.write(b"\x1b[C");
+                        time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
+                        tn.write(b"\x1b[D");
+                        time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
+                        #--2017.09.29 After post jump, there is no "文章選讀" keywords
+                        if "文章選讀" in content_term:
+                            for warnmsg in warning_message:
+                                print(">>> 進行推文");
+                                tn.write("X".encode('uao_decode'));
                                 time.sleep(3);
                                 content_term = tn.read_very_eager().decode('uao_decode');
-                                # Copy
-                                if "自存底稿" in content_term:
-                                    print(">>> 不存底稿");
-                                    tn.write("n".encode('uao_decode') + b"\r");
+                                # Possible push procedures
+                                # Push is prohibited
+                                if "禁止推薦" in content_term:
+                                    print(">>> 禁止推文");
+                                    tn.write(" ".encode('uao_decode'));
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                    break;
+                                # Login account as same as author
+                                if "作者本人" in content_term:
+                                    print(">>> 不予警告");
+                                    tn.write(b"\r");
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                    break;
+                                # Normal push procedure
+                                if "您覺得這篇文章" in content_term:
+                                    print(">>> 輸入推文");
+                                    tn.write("3".encode('uao_decode'));
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                    # Push content input field
+                                    tn.write(warnmsg.encode('uao_decode') + b"\r");
+                                    time.sleep(3);
+                                    content_term = tn.read_very_eager().decode('uao_decode');
+                                    tn.write("y".encode('uao_decode') + b"\r");
                                     time.sleep(3);
                                     content_term = tn.read_very_eager().decode('uao_decode');
     # Logout process
@@ -578,7 +616,6 @@ def test_mail( content ):
         print(">>> 登出");
         tn.write(b"\x1b[D");
         time.sleep(3);
-        content_term = tn.read_very_eager().decode('uao_decode');
         tn.write(b"\x1b[C");
         time.sleep(3);
         content_term = tn.read_very_eager().decode('uao_decode');
@@ -588,8 +625,6 @@ def test_mail( content ):
             tn.write("Y".encode('uao_decode') + b"\r");
             time.sleep(3);
             content_term = tn.read_very_eager().decode('uao_decode');
-def test_push( content ):
     pass
 # Test procedure
-test_mail( "這是一封測試信件" );
-test_push( "測試推文" );
+test_push("/bbs/ONE_PIECE/M.1435208990.A.622.html");
