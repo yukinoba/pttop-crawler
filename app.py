@@ -161,9 +161,9 @@ def prosecute_notify( pushlist ):
 # Function: Write warning message to those bad evaluation posts
 def post_warning( postlist ):
     warning_message = [
-        "本板板旨為討論 ONE PIECE作品相關內容，若有無涉作品之",
-        "討論還請多加留意板規相關規範，並請尊重各方板友之意見",
-        "請勿作情緒性人身攻擊之發言內容；如有需要修正推文內容",
+        "本板板旨為討論ONEPIECE作品相關內容，若有無涉作品之",
+        "之討論還請多留意板規相關規範，並請尊重各方板友意見",
+        "請勿作情緒性人身攻擊發言內容；如有需要修正推文內容",
         "請自行洽原發文者聯繫請求協助。",
         "以上根據本板板規C-2、I(3)給予提醒"
     ];
@@ -479,9 +479,9 @@ def modify_title( newtitle ):
 # Function: test push
 def test_push( postlink ):
     warning_message = [
-        "本板板旨為討論 ONE PIECE作品相關內容，若有無涉作品之",
-        "討論還請多加留意板規相關規範，並請尊重各方板友之意見",
-        "請勿作情緒性人身攻擊之發言內容；如有需要修正推文內容",
+        "本板板旨為討論ONEPIECE作品相關內容，若有無涉作品之",
+        "討論時還請多留意板規相關規範，並請尊重各方板友意見",
+        "請勿作情緒性人身攻擊發言內容；如有需要修正推文內容",
         "請自行洽原發文者聯繫請求協助。",
         "以上根據本板板規C-2、I(3)給予提醒"
     ];
