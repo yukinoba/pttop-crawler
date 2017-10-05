@@ -420,9 +420,9 @@ warning_post_list = [];
 last_warned_posts = [];
 last_chapter_int = chapter_starts;
 board_topic_keeper = None;
-conn = http.client.HTTPSConnection("www.ptt.cc");
 # Work until shutdown
 while True:
+    conn = http.client.HTTPSConnection("www.ptt.cc");
     conn.request("GET", "/bbs/ONE_PIECE/index.html");
     response_list = conn.getresponse();
     content_list = response_list.read().decode(response_list.headers.get_content_charset('utf-8'));
@@ -569,6 +569,8 @@ while True:
             print(">>> 更換板標：" + board_topic_keeper);
             modify_title(board_topic_keeper);
             board_topic_keeper = None;
+    # Close connection
+    conn.close();
     # Rest a moment
-    #--2017.10.05 extends to 5mins a round
-    time.sleep(60 * 5);
+    #--2017.10.05 extends to 3mins a round
+    time.sleep(60 * 3);
