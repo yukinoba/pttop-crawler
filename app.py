@@ -12,8 +12,8 @@ from bs4 import BeautifulSoup
 # Global setup definition
 bm_list = ['yukinoba', 'frojet'];
 login = {'account': 'yukinoba', 'password': 'ckmagic007'};
-chapter_starts = 880; #--2017.09.28 magic number
-default_board_topic = "[海賊] 人類的夢想永無止境";
+chapter_starts = 881; #--2017.10.05 magic number
+default_board_topic = "[海賊] 人的夢想永無止境";
 # Function definition
 # Utility: convert PTT web filename to AIDu
 def fn2aidu( type, v1, v2 ):
@@ -417,6 +417,7 @@ def modify_title( newtitle ):
 # Main procedure
 last_newpush_list = [];
 warning_post_list = [];
+last_warned_posts = [];
 last_chapter_int = chapter_starts;
 board_topic_keeper = None;
 conn = http.client.HTTPSConnection("www.ptt.cc");
@@ -472,49 +473,41 @@ while True:
         # Skip annoucement posts
         if "[公告]" in postentry.select('div.title')[0].text:
             continue;
-        if "X" in postentry.select('div.nrec')[0].text:
-            for postlink in postentry.select('div.title > a'):
-                # print(">>> 文章連結：" + postlink['href']);
-                post_href = postlink['href'];
-                # Enter warning post
-                conn.request("GET", post_href);
-                response_post = conn.getresponse();
-                content_post = response_post.read().decode(response_post.headers.get_content_charset('utf-8'));
-                # Check warning exists
-                has_warned = False;
+        # Get evaluation number
+        evaluation = postentry.select('div.nrec')[0].text;
+        # Get post link
+        for postlink in postentry.select('div.title > a'):
+            # print(">>> 文章連結：" + postlink['href']);
+            post_href = postlink['href'];
+            # Enter warning post
+            conn.request("GET", post_href);
+            response_post = conn.getresponse();
+            content_post = response_post.read().decode(response_post.headers.get_content_charset('utf-8'));
+            # Count bad pushes
+            bad_post = False;
+            if "X" in evaluation:
+                bad_post = True;
+            else:
+                bad_count = 0;
                 soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                for userid in soup_postpush.select('span.push-userid'):
-                    if userid.text.strip() in bm_list:
-                        has_warned = True;
-                # Has no warning, add to the warning list
-                if not has_warned:
-                    warning_post_list.append(post_href);
-        else:
-            # Check push before bad evaluation occurs
-            if not postentry.select('div.nrec')[0].text:
-                for postlink in postentry.select('div.title > a'):
-                    # print(">>> 文章連結：" + postlink['href']);
-                    post_href = postlink['href'];
-                    # Enter warning post
-                    conn.request("GET", post_href);
-                    response_post = conn.getresponse();
-                    content_post = response_post.read().decode(response_post.headers.get_content_charset('utf-8'));
-                    # Count bad evalutions
-                    bad_count = 0;
-                    soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                    for pushtag in soup_postpush.select('span.push-tag'):
-                        if "噓" in pushtag.text:
-                            bad_count = bad_count + 1;
-                    if bad_count > 10:
-                        # Check warning exists
-                        has_warned = False;
-                        soup_postpush = BeautifulSoup(content_post, 'html.parser');
-                        for userid in soup_postpush.select('span.push-userid'):
-                            if userid.text.strip() in bm_list:
-                                has_warned = True;
-                        # Has no warning, add to the warning list
-                        if not has_warned:
-                            warning_post_list.append(post_href);
+                for pushtag in soup_postpush.select('span.push-tag'):
+                    if "噓" in pushtag.text:
+                        bad_count = bad_count + 1;
+                if bad_count > 10:
+                    bad_post = True;
+            # Check warning exists
+            has_warned = False;
+            soup_postpush = BeautifulSoup(content_post, 'html.parser');
+            for userid in soup_postpush.select('span.push-userid'):
+                if userid.text.strip() in bm_list:
+                    has_warned = True;
+            #--2017.10.05 keep warned post href for delayed Web PTT flush
+            if post_href in last_warned_posts:
+                has_warned = True;
+            # Has no warning, add to the warning list
+            if bad_post and not has_warned:
+                warning_post_list.append(post_href);
+                last_warned_posts.append(post_href);
     if len(warning_post_list) > 0:
         for post_href in warning_post_list:
             print(">>> 需要警告：" + "https://www.ptt.cc" + post_href);
@@ -577,4 +570,5 @@ while True:
             modify_title(board_topic_keeper);
             board_topic_keeper = None;
     # Rest a moment
-    time.sleep(60 * 1);
+    #--2017.10.05 extends to 5mins a round
+    time.sleep(60 * 5);
