@@ -10,8 +10,8 @@ import re
 import http.client
 from bs4 import BeautifulSoup
 # Global setup definition
-# bm_list = ['yukinoba', 'frojet'];
-bm_list = ['yukinoba'];
+bm_list = ['yukinoba', 'frojet'];
+# bm_list = ['yukinoba'];
 login = {'account': 'yukinoba', 'password': 'ckmagic007'};
 chapter_starts = 881; #--2017.10.05 magic number
 default_board_topic = "[海賊] 人的夢想永無止境";
@@ -162,12 +162,19 @@ def prosecute_notify( pushlist ):
             content_term = tn.read_very_eager().decode('uao_decode');
 # Function: Write warning message to those bad evaluation posts
 def post_warning( postlist ):
-    warning_message = [
+    warning_message_withoutip = [
         "本板板旨為討論ONEPIECE作品相關內容，若有無涉作品之",
         "之討論還請多留意板規相關規範，並請尊重各方板友意見",
         "請勿作情緒性人身攻擊發言內容；如有需要修正推文內容",
         "請自行洽原發文者聯繫請求協助。",
         "以上根據本板板規C-2、I(3)給予提醒"
+    ];
+    warning_message_withip = [
+        "本板主要為討論ONEPIECE作品相關",
+        "板友請勿作出違反板規之討論內容",
+        "並請尊重彼此，不要作情緒性發言",
+        "欲修正發言者，請自行洽原po協助",
+        "以上根據板規C-2、I(3)給予提醒"
     ];
     tn = telnetlib.Telnet('ptt.cc');
     time.sleep(3);
@@ -247,14 +254,28 @@ def post_warning( postlist ):
                             content_term = tn.read_very_eager().decode('uao_decode');
                             # Back to post list
                             continue;
-                        #--2017.09.29 redraw the terminal content
-                        tn.write(b"\x1b[C");
-                        time.sleep(3);
-                        content_term = tn.read_very_eager().decode('uao_decode');
-                        tn.write(b"\x1b[D");
-                        time.sleep(3);
-                        content_term = tn.read_very_eager().decode('uao_decode');
                         #--2017.09.29 After post jump, there is no "文章選讀" keywords
+                        #--2017.09.29 redraw the terminal content
+                        # tn.write(b"\x1b[C");
+                        # time.sleep(3);
+                        # content_term = tn.read_very_eager().decode('uao_decode');
+                        # tn.write(b"\x1b[D");
+                        # time.sleep(3);
+                        # content_term = tn.read_very_eager().decode('uao_decode');
+                        #--2017.10.14 confirm push layout setting
+                        warning_message = warning_message_withoutip;
+                        tn.write("i".encode('uao_decode'));
+                        time.sleep(3);
+                        content_term = tn.read_very_eager().decode('uao_decode');
+                        # Open the board settings dashboard
+                        if "看板設定" in content_term:
+                            print(">>> 看板設定");
+                            if not "推文時不會記錄來源IP" in content_term.strip():
+                                print(">>> 有紀錄IP");
+                                warning_message = warning_message_withip;
+                            tn.write(b"\r");
+                            time.sleep(3);
+                            content_term = tn.read_very_eager().decode('uao_decode');
                         if "文章選讀" in content_term:
                             # Push warning message under the post
                             for warnmsg in warning_message:
