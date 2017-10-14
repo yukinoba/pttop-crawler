@@ -469,7 +469,7 @@ while True:
     # Check bad evaluation
     soup_list = BeautifulSoup(content_list, 'html.parser');
     for postentry in soup_list.select('div.r-ent'):
-        # print(">>> 讀取評價：" + postentry.select('div.nrec')[0].text);
+        print(">>> 讀取評價：" + postentry.select('div.nrec')[0].text);
         # Skip annoucement posts
         if "[公告]" in postentry.select('div.title')[0].text:
             continue;
@@ -477,7 +477,7 @@ while True:
         evaluation = postentry.select('div.nrec')[0].text;
         # Get post link
         for postlink in postentry.select('div.title > a'):
-            # print(">>> 文章連結：" + postlink['href']);
+            print(">>> 文章連結：" + postlink['href']);
             post_href = postlink['href'];
             # Enter warning post
             conn.request("GET", post_href);
@@ -486,6 +486,7 @@ while True:
             # Count bad pushes
             bad_post = False;
             if "X" in evaluation:
+                print(">>> 發生負評");
                 bad_post = True;
             else:
                 bad_count = 0;
@@ -493,6 +494,7 @@ while True:
                 for pushtag in soup_postpush.select('span.push-tag'):
                     if "噓" in pushtag.text:
                         bad_count = bad_count + 1;
+                print(">>> 噓文總數：" + str(bad_count));
                 if bad_count > 10:
                     bad_post = True;
             # Check warning exists
@@ -500,6 +502,7 @@ while True:
             soup_postpush = BeautifulSoup(content_post, 'html.parser');
             for userid in soup_postpush.select('span.push-userid'):
                 if userid.text.strip() in bm_list:
+                    print(">>> 已警告過：" + userid.text.strip());
                     has_warned = True;
             #--2017.10.05 keep warned post href for delayed Web PTT flush
             if post_href in last_warned_posts:
