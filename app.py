@@ -97,7 +97,7 @@ def prosecute_notify( pushlist ):
             # Mailing list
             if "群組寄信名單" in content_term:
                 print(">>> 寄信名單");
-                tn.write("0".encode('uao_decode') + b"\r");
+                tn.write("1".encode('uao_decode') + b"\r");
                 time.sleep(3);
                 content_term = tn.read_very_eager().decode('uao_decode');
                 tn.write("m".encode('uao_decode') + b"\r");
@@ -481,7 +481,6 @@ while True:
                             last_newpush_list.append(pushtext);
                     if not newcoming:
                         print(">>> 無新推文");
-                        del last_newpush_list[:];
                     else:
                         for newpushtext in last_newpush_list:
                            print(">> 有新推文：" + newpushtext);
