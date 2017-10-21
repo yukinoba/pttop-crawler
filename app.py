@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 bm_list = ['yukinoba', 'frojet'];
 # bm_list = ['yukinoba'];
 login = {'account': 'yukinoba', 'password': 'ckmagic007'};
-chapter_starts = 881; #--2017.10.05 magic number
+chapter_starts = 882; #--2017.10.22 magic number
 default_board_topic = "[海賊] 人的夢想永無止境";
 # Function definition
 # Utility: convert PTT web filename to AIDu
